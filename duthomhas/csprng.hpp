@@ -14,8 +14,8 @@
 #include <string>
 #include <type_traits>
 
-#include <duthomhas/csprng.h>
-#include <duthomhas/is_iterable.hpp>
+#include "csprng.h"
+#include "is_iterable.hpp"
 
 //-------------------------------------------------------------------------------------------------
 namespace duthomhas

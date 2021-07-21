@@ -3,56 +3,26 @@ Import('env')
 module_env = env.Clone()
 
 sources = [
-    "nano.hpp",
     "nano.cpp",
 
-    "sha256/sha256.cpp",
-    "sha256/sha256.hpp",
+    "register_types.cpp",
 
-    "qrcode/QrCode.cpp",
-    "qrcode/QrCode.hpp",
+    # "sha256/sha256.cpp",
 
-    "ed25519/ed25519-donna-32bit-tables.h"
-    "ed25519/ed25519-donna-batchverify.h",
-    "ed25519/ed25519-hash-custom.h",
-    "ed25519/modm-donna-32bit.h",
-    "ed25519/curve25519-donna-32bit.h",
-    "ed25519/ed25519-donna-64bit-sse2.h",
-    "ed25519/ed25519-donna-impl-base.h",
-    "ed25519/ed25519-hash.h",
-    "ed25519/modm-donna-64bit.h",
-    "ed25519/curve25519-donna-64bit.h",
-    "ed25519/ed25519-donna-64bit-tables.h",
-    "ed25519/ed25519-donna-impl-sse2.h",
-    "ed25519/ed25519-randombytes-custom.h",
-    "ed25519/regression.h",
-    "ed25519/curve25519-donna-helpers.h",
-    "ed25519/ed25519-donna-64bit-x86-32bit.h",
-    "ed25519/ed25519-donna-portable-identify.h",
-    "ed25519/ed25519-randombytes.h",
-    "ed25519/curve25519-donna-sse2.h",
-    "ed25519/ed25519-donna-64bit-x86.h",
-    "ed25519/ed25519-donna-portable.h",
-    "ed25519/ed25519.c",
-    "ed25519/ed25519-donna-32bit-sse2.h",
-    "ed25519/ed25519-donna-basepoint-table.h",
-    "ed25519/ed25519-donna.h",
-    "ed25519/ed25519.h",
+    # "qrcode/QrCode.cpp",
+
+    "ed25519-donna/ed25519.c",
+    "ed25519-donna/ed25519-custom-funcs.cpp",
 
     "duthomhas/csprng.cpp",
-    "duthomhas/csprng.h",
-    "duthomhas/csprng.hpp",
-    "duthomhas/is_iterable.hpp",
 
-    "blake2/blake2-impl.h",
-    "blake2/blake2.h",
-    "blake2/blake2b-ref.cpp",
+    "blake2/blake2b-ref.cpp"
 
-    "bigint/bigint.cpp",
-    "bigint/bigint.h",
+    # "bigint/bigint.cpp",
 
-    "baseconverter/base_converter.cpp",
-    "baseconverter/base_converter.hpp"
+    # "baseconverter/base_converter.cpp",
 ]
 
 module_env.add_source_files(env.modules_sources, sources)
+
+module_env.Append(CCFLAGS=['-DED25519_CUSTOMRANDOM', '-DED25519_CUSTOMHASH'])

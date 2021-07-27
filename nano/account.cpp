@@ -1,15 +1,15 @@
-#include "nano.h"
+#include "account.h"
 
-#include "blake2/blake2.h"
-#include "duthomhas/csprng.hpp"
-#include "ed25519-donna/ed25519.h"
+#include "../blake2/blake2.h"
+#include "../duthomhas/csprng.hpp"
+#include "../ed25519-donna/ed25519.h"
+
+#include "core/io/file_access_encrypted.h"
 
 #include <vector>
 
-namespace nano {
 const char base32_characters[33] = "13456789abcdefghijkmnopqrstuwxyz";
 const char hex_characters[17] = "0123456789ABCDEF";
-
 
 int keyStringToBytes(String const & in, std::array<uint8_t, 32> & out){
     // Seed, Private Key, and Public Key should all be 64 Hexadecimal characters (representing 32 bytes of data)
@@ -25,7 +25,7 @@ String uint8_t_to_hex(uint8_t const & in) {
     return String(hex);
 }
 
-String bytesToKeyString(std::array<uint8_t, 32> & in) {
+String bytes_to_key_string(std::array<uint8_t, 32> & in) {
     String out;
     for(int i = 0; i < 32; i++){
         out += uint8_t_to_hex(in[i]);
@@ -33,7 +33,7 @@ String bytesToKeyString(std::array<uint8_t, 32> & in) {
     return out;
 }
 
-String encodeBase32(uint8_t* bytes, size_t length) {
+String encode_base32(uint8_t* bytes, size_t length) {
     int leftover = (length * 8) % 5;
     int offset = leftover == 0 ? 0 : 5 - leftover;
 
@@ -80,7 +80,7 @@ void NanoAccount::generate_keys_and_address() {
     blake2b(checksum.data(), 5, public_key.data(), 32, NULL, 0);
     std::reverse(checksum.begin(), checksum.end());
 
-    address = "nano_" + encodeBase32(public_key.data(), 32) + encodeBase32(checksum.data(), 5);
+    address = "nano_" + encode_base32(public_key.data(), 32) + encode_base32(checksum.data(), 5);
 }
 
 void NanoAccount::initialize_with_new_seed() {
@@ -102,15 +102,15 @@ void NanoAccount::set_seed_and_index(String const & s, uint32_t index) {
 }
 
 String NanoAccount::get_seed() {
-    return bytesToKeyString(seed);
+    return bytes_to_key_string(seed);
 }
 
 String NanoAccount::get_private_key() {
-    return bytesToKeyString(private_key);
+    return bytes_to_key_string(private_key);
 }
 
 String NanoAccount::get_public_key() {
-    return bytesToKeyString(public_key);
+    return bytes_to_key_string(public_key);
 }
 
 void NanoAccount::_bind_methods() {
@@ -126,7 +126,4 @@ void NanoAccount::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_private_key"), &NanoAccount::get_private_key);
     ClassDB::bind_method(D_METHOD("get_public_key"), &NanoAccount::get_public_key);
     ClassDB::bind_method(D_METHOD("get_index"), &NanoAccount::get_index);
-}
-
-
 }

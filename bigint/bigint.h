@@ -5,6 +5,8 @@
 #include <iostream>
 #include <map>
 
+#include "core/script_language.h"
+
 namespace Dodecahedron
 {
 class Bigint
@@ -19,9 +21,12 @@ private:
 public:
     //Constructors
     Bigint();
-    Bigint(long long);
-    Bigint(std::string);
+    Bigint(String);
     Bigint(const Bigint& b);
+
+    //Allocation
+    Bigint operator=(String);
+    Bigint operator=(Bigint);
 
     //Adding
     Bigint operator+(Bigint const &) const;
@@ -47,15 +52,11 @@ public:
     bool operator==(const Bigint &) const;
     bool operator!=(const Bigint &) const;
 
-    //Allocation
-    Bigint operator=(const long long &);
-
     //Access
     int operator[](int const &);
 
     //Input&Output
-    friend std::istream &operator>>(std::istream &, Bigint &);
-    friend std::ostream &operator<<(std::ostream &, Bigint const &);
+    String to_string();
 
     //Helpers
     void clear();
@@ -74,7 +75,6 @@ private:
 };
 
 Bigint abs(Bigint);
-std::string to_string(Bigint const &);
 Bigint factorial(int);
 }
 

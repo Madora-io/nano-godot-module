@@ -6,7 +6,6 @@
 #include "core/reference.h"
 #include "core/script_language.h"
 
-namespace nano {
 class NanoAccount : public Reference {
     GDCLASS(NanoAccount, Reference);
 
@@ -25,6 +24,7 @@ class NanoAccount : public Reference {
         void initialize_with_new_seed(); // Create an account with a newly generated seed
         void set_seed(String const &); // Create first account from seed
         void set_seed_and_index(String const &, uint32_t); // Create account from seed and index
+
         String get_seed(); // Return the seed as a hex value
         String get_private_key();
         String get_public_key();
@@ -33,5 +33,4 @@ class NanoAccount : public Reference {
         String get_address() { return address; }
 };
 
-}
 #endif

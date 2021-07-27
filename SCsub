@@ -3,7 +3,9 @@ Import('env')
 module_env = env.Clone()
 
 sources = [
-    "nano.cpp",
+    "nano/account.cpp",
+    "nano/amount.cpp",
+    "nano/requester.cpp",
 
     "register_types.cpp",
 
@@ -16,11 +18,10 @@ sources = [
 
     "duthomhas/csprng.cpp",
 
-    "blake2/blake2b-ref.cpp"
+    "blake2/blake2b-ref.cpp",
 
-    # "bigint/bigint.cpp",
+    "bigint/bigint.cpp"
 
-    # "baseconverter/base_converter.cpp",
 ]
 
 module_env.add_source_files(env.modules_sources, sources)

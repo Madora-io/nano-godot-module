@@ -18,24 +18,8 @@ Bigint::Bigint(const Bigint &b)
           positive(b.positive),
           base(b.base),
           skip(b.skip) { }
-Bigint::Bigint(long long value)
-{
-    base = Bigint::default_base;
-    skip = 0;
-    if (value < 0) {
-        positive = false;
-        value *= -1;
-    } else {
-        positive = true;
-    }
 
-    while (value) {
-        number.push_back((int) (value % base));
-        value /= base;
-    }
-}
-
-Bigint::Bigint(std::string stringInteger)
+Bigint::Bigint(String stringInteger)
 {
     int size = stringInteger.length();
 
@@ -59,6 +43,46 @@ Bigint::Bigint(std::string stringInteger)
         number.push_back(num);
         size -= length;
     }
+}
+
+//Allocation
+Bigint Bigint::operator=(String stringInteger)
+{
+    number.clear();
+    
+    int size = stringInteger.length();
+
+    base = Bigint::default_base;
+    skip = 0;
+    positive = (stringInteger[0] != '-');
+
+    while (true) {
+        if (size <= 0) break;
+        if (!positive && size <= 1) break;
+
+        int length = 0;
+        int num = 0;
+        int prefix = 1;
+        for (int i(size - 1); i >= 0 && i >= size - 9; --i) {
+            if (stringInteger[i] < '0' || stringInteger[i] > '9') break;
+            num += (stringInteger[i] - '0') * prefix;
+            prefix *= 10;
+            ++length;
+        }
+        number.push_back(num);
+        size -= length;
+    }
+
+    return *this;
+}
+
+Bigint Bigint::operator=(Bigint other) {
+    number.clear();
+    number = other.number;
+    positive = other.positive;
+    base = other.base;
+    skip = other.skip;
+    return *this;
 }
 
 //Adding
@@ -309,23 +333,10 @@ bool Bigint::operator!=(Bigint const &b) const
     return ! (*this == b);
 }
 
-//Allocation
-Bigint Bigint::operator=(const long long &a)
-{
-    number.clear();
-    long long t = a;
-    do {
-        number.push_back((int) (t % base));
-        t /= base;
-    } while (t != 0);
-
-    return *this;
-}
-
 //Access
 int Bigint::operator[](int const &b)
 {
-    return to_string(*this)[b] - '0';
+    return to_string()[b] - '0';
 }
 
 //Trivia
@@ -376,35 +387,24 @@ Bigint &Bigint::abs()
     return *this;
 }
 
-//Input&Output
-std::ostream &operator<<(std::ostream &out, Bigint const &a)
-{
-    if (!a.number.size()) return out << 0;
-    int i = a.number.size() - 1;
-    for (; i>=0 && a.number[i] == 0; --i);
+String Bigint::to_string() {
+    if (!number.size()) return String("0");
 
-    if (i == -1) return out << 0;
-    if (!a.positive) out << '-';
+    int i = number.size() - 1;
+    for (; i>=0 && number[i] == 0; --i);
+    if (i == -1) return String("0");
 
-    std::vector<int>::const_reverse_iterator it = a.number.rbegin() + (a.number.size() - i - 1);
+    String out;
+    if (!positive) out += '-';
 
-    out << *it++;
-    for (; it != a.number.rend(); ++it) {
-        for (int i(0), len = a.segment_length(*it); i < 9 - len; ++i) out << '0';
-        if (*it) out << *it;
+    std::vector<int>::const_reverse_iterator it = number.rbegin() + (number.size() - i - 1);
+    out += itos(*it++);
+        for (; it != number.rend(); ++it) {
+        for (int i(0), len = segment_length(*it); i < 9 - len; ++i) out += '0';
+        if (*it) out += itos(*it);
     }
 
     return out;
-}
-
-std::istream &operator>>(std::istream &in, Bigint &a)
-{
-    std::string str;
-    in >> str;
-
-    a = str;
-
-    return in;
 }
 
 int Bigint::segment_length(int segment) const
@@ -421,30 +421,6 @@ int Bigint::segment_length(int segment) const
 Bigint abs(Bigint value)
 {
     return value.abs();
-}
-
-std::string to_string(Bigint const &value)
-{
-    std::ostringstream stream;
-    stream << value;
-
-    return stream.str();
-}
-
-Bigint factorial(int n)
-{
-    Bigint result = 1;
-    if (n % 2) {
-        result = n;
-        --n;
-    }
-    int last = 0;
-    for (; n >= 2; n -= 2) {
-        result *= n + last;
-        last += n;
-    }
-
-    return result;
 }
 
 }

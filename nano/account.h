@@ -1,5 +1,5 @@
-#ifndef NANO_H_
-#define NANO_H_
+#ifndef NANO_ACCOUNT_H_
+#define NANO_ACCOUNT_H_
 
 #include <array>
 #include <iostream>
@@ -31,6 +31,10 @@ class NanoAccount : public Reference {
         int get_index() { return index; }
         void set_address(String const & a);
         String get_address() { return address; }
+
+        String block_hash(String previous, String representative, String balance, String link);
+    
+        String sign(String previous, String representative, String balance, String link);
 };
 
 #endif

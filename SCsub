@@ -6,6 +6,7 @@ sources = [
     "nano/account.cpp",
     "nano/amount.cpp",
     "nano/requester.cpp",
+    "nano/sender.cpp",
 
     "register_types.cpp",
 

@@ -11,7 +11,7 @@
 const char base32_characters[33] = "13456789abcdefghijkmnopqrstuwxyz";
 const char hex_characters[17] = "0123456789ABCDEF";
 
-int keyStringToBytes(String const & in, std::array<uint8_t, 32> & out){
+int key_string_to_bytes(String const & in, std::array<uint8_t, 32> & out){
     // Seed, Private Key, and Public Key should all be 64 Hexadecimal characters (representing 32 bytes of data)
     assert(in.length() == 64);
     for(int i = 0; i < in.length(); i+=2){
@@ -25,10 +25,11 @@ String uint8_t_to_hex(uint8_t const & in) {
     return String(hex);
 }
 
-String bytes_to_key_string(std::array<uint8_t, 32> & in) {
+template <typename Iter>
+String bytes_to_key_string(Iter first, Iter last) {
     String out;
-    for(int i = 0; i < 32; i++){
-        out += uint8_t_to_hex(in[i]);
+    for(; first != last; ++first){
+        out += uint8_t_to_hex(*first);
     }
     return out;
 }
@@ -95,22 +96,53 @@ void NanoAccount::set_seed(String const & s) {
 }
 
 void NanoAccount::set_seed_and_index(String const & s, uint32_t index) {
-    keyStringToBytes(s, seed);
+    key_string_to_bytes(s, seed);
     this->index = index;
 
     generate_keys_and_address();
 }
 
+String NanoAccount::block_hash(String previous, String representative, String balance, String link) {
+    std::array<uint8_t, 176> hash_data;
+    uint8_t preamble[32] = {0x6};
+    memcpy(hash_data.data(), preamble, 32);
+    memcpy(&hash_data[32], get_public_key().c_str(), 32);
+    memcpy(&hash_data[64], previous.c_str(), 32);
+    memcpy(&hash_data[96], representative.c_str(), 32);
+    memcpy(&hash_data[128], balance.c_str(), 16);
+    memcpy(&hash_data[144], link.c_str(), 32);
+    std::array<uint8_t, 32> hash_result;
+
+    blake2b(hash_result.data(), hash_result.size(), hash_data.data(), hash_data.size(), NULL, 0);
+
+    return bytes_to_key_string(hash_result.begin(), hash_result.end());
+}
+
+String NanoAccount::sign(String previous, String representative, String balance, String link) {
+    std::array<uint8_t, 176> signature_data;
+    uint8_t preamble[32] = {0x6};
+    memcpy(signature_data.data(), preamble, 32);
+    memcpy(&signature_data[32], get_public_key().c_str(), 32);
+    memcpy(&signature_data[64], previous.c_str(), 32);
+    memcpy(&signature_data[96], representative.c_str(), 32);
+    memcpy(&signature_data[128], balance.c_str(), 16);
+    memcpy(&signature_data[144], link.c_str(), 32);
+    std::array<uint8_t, 64> signature_result;
+    ed25519_sign(signature_data.data(), 176, private_key.data(), public_key.data(), signature_result.data());
+    
+    return bytes_to_key_string(signature_result.begin(), signature_result.end());
+}
+
 String NanoAccount::get_seed() {
-    return bytes_to_key_string(seed);
+    return bytes_to_key_string(seed.begin(), seed.end());
 }
 
 String NanoAccount::get_private_key() {
-    return bytes_to_key_string(private_key);
+    return bytes_to_key_string(private_key.begin(), private_key.end());
 }
 
 String NanoAccount::get_public_key() {
-    return bytes_to_key_string(public_key);
+    return bytes_to_key_string(public_key.begin(), public_key.end());
 }
 
 void NanoAccount::_bind_methods() {
@@ -118,6 +150,7 @@ void NanoAccount::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_address"), &NanoAccount::get_address);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "address", PROPERTY_HINT_TYPE_STRING, ""), "set_address", "get_address");
 
+    ClassDB::bind_method(D_METHOD("initialize_with_new_seed"), &NanoAccount::initialize_with_new_seed);
     ClassDB::bind_method(D_METHOD("set_seed", "seed"), &NanoAccount::set_seed);
     ClassDB::bind_method(D_METHOD("set_seed_and_index", "seed", "index"), &NanoAccount::set_seed_and_index);
     ClassDB::bind_method(D_METHOD("get_seed"), &NanoAccount::get_seed);
@@ -126,4 +159,6 @@ void NanoAccount::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_private_key"), &NanoAccount::get_private_key);
     ClassDB::bind_method(D_METHOD("get_public_key"), &NanoAccount::get_public_key);
     ClassDB::bind_method(D_METHOD("get_index"), &NanoAccount::get_index);
+
+    ClassDB::bind_method(D_METHOD("sign", "previous", "representative", "balance", "link"), &NanoAccount::sign);
 }

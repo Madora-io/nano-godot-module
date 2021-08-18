@@ -10,7 +10,7 @@ void NanoSender::_init() {
 
 void NanoSender::cancel_send_request(String error_message, int error_code) {
     state = READY;
-    emit_signal("nano_send_completed", error_code, error_message);
+    emit_signal("nano_send_completed", requester.get_account(), error_message, error_code);
     ERR_FAIL_MSG(error_message);
 }
 
@@ -35,10 +35,14 @@ void NanoSender::_nano_send_completed(int p_status, int p_code, const PoolString
     {
         String previous = json_ptr->get("frontier", "");
         String representative = json_ptr->get("representative", "");
+        String current_balance = json_ptr->get("balance", "");
+        Ref<NanoAmount> balance;
+        balance->set_amount(current_balance);
+        balance->sub(sending_amount);
 
-        if(previous.empty() || representative.empty() || sending_amount.is_null(), destination->get_public_key().empty())
+        if(previous.empty() || representative.empty() || sending_amount.is_null() || destination->get_public_key().empty()) cancel_send_request("Unexpected account state", 1);
 
-        block = requester.block_create(previous, representative, sending_amount, destination->get_public_key());
+        block = requester.block_create(previous, representative, balance, destination->get_public_key());
         state = WORK;
         requester.work_generate(block["hash"], use_peers);
         break;
@@ -61,7 +65,7 @@ void NanoSender::_nano_send_completed(int p_status, int p_code, const PoolString
     {
         String hash = json_ptr->get("hash", "");
         state = READY;
-        emit_signal("nano_send_completed", 0, "Success: " + hash);
+        emit_signal("nano_send_completed", requester.get_account(), hash, 0);
         break;
     }
     default:
@@ -105,5 +109,5 @@ void NanoSender::_bind_methods() {
     ClassDB::bind_method(D_METHOD("send", "sender", "destination", "amount", "url"), &NanoSender::send, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("set_connection_parameters", "node_url", "auth_header", "use_ssl", "work_url", "use_peers"), &NanoSender::set_connection_parameters, DEFVAL(false), DEFVAL(""), DEFVAL(true), DEFVAL(""));
 
-    ADD_SIGNAL(MethodInfo("nano_send_completed", PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::INT, "response_code")));
+    ADD_SIGNAL(MethodInfo("nano_send_completed", PropertyInfo(Variant::OBJECT, "account"), PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::INT, "response_code")));
 }

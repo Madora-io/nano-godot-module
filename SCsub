@@ -7,6 +7,8 @@ sources = [
     "nano/amount.cpp",
     "nano/requester.cpp",
     "nano/sender.cpp",
+    "nano/receiver.cpp",
+    "nano/watcher.cpp",
 
     "register_types.cpp",
 
@@ -28,3 +30,4 @@ sources = [
 module_env.add_source_files(env.modules_sources, sources)
 
 module_env.Append(CCFLAGS=['-DED25519_CUSTOMRANDOM', '-DED25519_CUSTOMHASH'])
+module_env.Append(CPPDEFINES=["MODULE_WEBSOCKET_ENABLED"])

@@ -9,13 +9,11 @@
 
 #include <atomic>
 
-enum NanoSendingState { READY, ACCOUNT, WORK, PROCESS };
-
 class NanoSender : public Node {
     GDCLASS(NanoSender, Node)
 
     private:
-        std::atomic<NanoSendingState> state;
+        std::atomic<NanoProcessorState> state;
         NanoRequest requester;
         Ref<NanoAmount> sending_amount;
         Ref<NanoAccount> destination;

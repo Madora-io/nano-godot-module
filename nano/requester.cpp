@@ -119,9 +119,12 @@ Error NanoRequest::work_generate(String hash, bool use_peers) {
 }
 
 void NanoRequest::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("get_account"), &NanoRequest::get_account);
     ClassDB::bind_method(D_METHOD("set_account", "account"), &NanoRequest::set_account);
     ClassDB::bind_method(D_METHOD("set_connection_parameters", "node_url", "use_ssl", "auth_header", "work_url"), &NanoRequest::set_connection_parameters, DEFVAL(""), DEFVAL(""),  DEFVAL(true));
     ClassDB::bind_method(D_METHOD("basic_auth_header", "username", "password"), &NanoRequest::basic_auth_header);
+
+    ClassDB::bind_method(D_METHOD("nano_request", "body", "use_work_url"), &NanoRequest::nano_request, DEFVAL(false));
 
     ClassDB::bind_method(D_METHOD("account_balance"), &NanoRequest::account_balance);
     ClassDB::bind_method(D_METHOD("account_info", "include_confirmed"), &NanoRequest::account_info, DEFVAL(true));

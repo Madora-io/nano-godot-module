@@ -3,8 +3,13 @@
 
 #include <array>
 #include <iostream>
+
+#include "amount.h"
+
+#include "core/image.h"
 #include "core/reference.h"
 #include "core/script_language.h"
+#include "scene/resources/texture.h"
 
 class NanoAccount : public Reference {
     GDCLASS(NanoAccount, Reference);
@@ -15,6 +20,9 @@ class NanoAccount : public Reference {
         std::array<uint8_t, 32> public_key;
         String address;
         uint32_t index;
+
+        std::array<uint8_t, 32> preamble;
+        std::array<uint8_t, 32> internal_block_hash(String previous, String representative, String balance, String link);
 
         void generate_keys_and_address();
     protected:
@@ -32,8 +40,10 @@ class NanoAccount : public Reference {
         void set_address(String const & a);
         String get_address() { return address; }
 
-        String block_hash(String previous, String representative, String balance, String link);
-    
+        Ref<ImageTexture> get_qr_code();
+        Ref<ImageTexture> get_qr_code_with_amount(Ref<NanoAmount> amount);
+
+        String block_hash(String previous, String representative, String balance, String link);    
         String sign(String previous, String representative, String balance, String link);
 };
 

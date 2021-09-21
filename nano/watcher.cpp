@@ -3,8 +3,11 @@
 #include "core/io/json.h"
 #include "core/method_bind_ext.gen.inc"
 
-void NanoWatcher::_init() {
-    _client = Ref<WebSocketClient>(WebSocketClient::create());
+NanoWatcher::NanoWatcher() {
+    Ref<WebSocketClient> client(WebSocketClient::create());
+    _client = client;
+    ERR_FAIL_COND_MSG(_client.is_null(), "Client was null, connection not established");
+
     _client->connect("connection_closed", this, "_closed");
     _client->connect("connection_error", this, "_closed");
     _client->connect("connection_established", this, "_connected");
@@ -20,6 +23,7 @@ NanoReceiver * NanoWatcher::get_free_receiver() {
 
     // No ready receiver found, have to make a new one
     NanoReceiver * new_receiver = memnew(NanoReceiver);
+    add_child(new_receiver);
     new_receiver->set_connection_parameters(node_url, default_rep, auth_header, use_ssl, work_url, use_peers);
     new_receiver->connect("nano_receive_completed", this, "_auto_recieve_completed");
     receiver_pool.push_back(new_receiver);
@@ -53,10 +57,11 @@ void NanoWatcher::initialize_and_connect(String node_url, String default_represe
     if(!auth_header.empty())
         headers.push_back(auth_header);
 
+    ERR_FAIL_COND_MSG(_client.is_null(), "Client was null, connection not established");
     _client->connect_to_url(node_url, Vector<String>(), false, headers);
 }
 
-bool NanoWatcher::is_connected() { return _client->get_connection_status() == WebSocketClient::CONNECTION_CONNECTED; }
+bool NanoWatcher::is_websocket_connected() { return _client->get_connection_status() == WebSocketClient::CONNECTION_CONNECTED; }
 
 void NanoWatcher::add_watched_account(Ref<NanoAccount> account) {
     Array add_accounts;
@@ -142,7 +147,7 @@ void NanoWatcher::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_auto_receive"), &NanoWatcher::get_auto_receive);
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_receive", PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ""), "set_auto_receive", "get_auto_receive");
 
-    ClassDB::bind_method(D_METHOD("is_connected"), &NanoWatcher::is_connected);
+    ClassDB::bind_method(D_METHOD("is_websocket_connected"), &NanoWatcher::is_websocket_connected);
 
     ADD_SIGNAL(MethodInfo("nano_receive_completed", PropertyInfo(Variant::OBJECT, "account"), PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::INT, "response_code")));
     ADD_SIGNAL(MethodInfo("confirmation_received", PropertyInfo(Variant::DICTIONARY, "json")));

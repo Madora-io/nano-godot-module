@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NanoReceiver" inherits="Node" version="3.3">
+	<brief_description>
+	Convenience class for receiving Nano.
+	</brief_description>
+	<description>
+	This class encapsulates the RPC calls account_info, block_create, work_generate, and process into one method and signal. Generally the flow will be a pending RPC call to gather pending transactions, followed by a call to receive with the information from the pending call. This class is also used internally by [NanoWatcher] to automatically create receive blocks.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_ready">
+			<return type="bool" />
+			<description>
+				Returns true if the receiver is ready to create a new receive block, or false if it is currently processing.
+			</description>
+		</method>
+		<method name="receive">
+			<return type="void" />
+			<argument index="0" name="receiver" type="NanoAccount" />
+			<argument index="1" name="linked_send_block" type="String" />
+			<argument index="2" name="amount" type="NanoAmount" />
+			<argument index="3" name="url" type="String" default="&quot;&quot;" />
+			<description>
+				Receive an amount. Linked send block should be the block hash for a [b]confirmed[/b] send block with this account as the link.
+			</description>
+		</method>
+		<method name="set_connection_parameters">
+			<return type="void" />
+			<argument index="0" name="node_url" type="String" />
+			<argument index="1" name="default_representative" type="String" />
+			<argument index="2" name="auth_header" type="String" default="false" />
+			<argument index="3" name="use_ssl" type="bool" default="&quot;&quot;" />
+			<argument index="4" name="work_url" type="String" default="true" />
+			<argument index="5" name="use_peers" type="bool" default="&quot;&quot;" />
+			<description>
+				This must be called before attempting to do any receiving. default_representative is used for newly created accounts. auth_header can be generated with [method NanoRequest.basic_auth_header] for Basic Authentication (https://en.wikipedia.org/wiki/Basic_access_authentication), or any other token depending on the requirements of the node proxy. Work URL is required if work must be generated at a different destination than the RPC Node. If the same destination is used for both, use_peers will likely need to be true. For more information on Work Generation, see https://docs.nano.org/integration-guides/work-generation/.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="nano_receive_completed">
+			<argument index="0" name="account" type="Object" />
+			<argument index="1" name="message" type="String" />
+			<argument index="2" name="response_code" type="int" />
+			<description>
+				This signal is sent whenever the receive has finished, regardless of success or failure. On a success, the message field will be the block hash of the received block (necessary for tracking confirmation), and the response code will be 0. On a failure, the message will be an error message, and the response code will be a positive integer.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NanoRequest" inherits="HTTPRequest" version="3.3">
+	<brief_description>
+	Extension of [HTTPRequest] with built in functions for common Nano requests.
+	</brief_description>
+	<description>
+	This class functions similarly to HTTPRequest (including using the same signals), with convenience functions for interacting with the Nano network. You must use [method set_connection_parameters] to initialize the requester before any calls can be made. Additionally, if the requests involve an account (all inbuilt requests require this) the [method set_account] function is required.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="account_balance">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="account_info">
+			<return type="int" enum="Error" />
+			<argument index="0" name="include_confirmed" type="bool" default="true" />
+			<description>
+			</description>
+		</method>
+		<method name="basic_auth_header">
+			<return type="String" />
+			<argument index="0" name="username" type="String" />
+			<argument index="1" name="password" type="String" />
+			<description>
+			Create a Basic Auth header, to be passed in with [method set_connection_parameters].
+			</description>
+		</method>
+		<method name="block_create">
+			<return type="Dictionary" />
+			<argument index="0" name="previous" type="String" />
+			<argument index="1" name="representative" type="String" />
+			<argument index="2" name="balance" type="NanoAmount" />
+			<argument index="3" name="link" type="String" />
+			<argument index="4" name="work" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_account">
+			<return type="NanoAccount" />
+			<description>
+			</description>
+		</method>
+		<method name="nano_request">
+			<return type="int" enum="Error" />
+			<argument index="0" name="body" type="Dictionary" />
+			<argument index="1" name="use_work_url" type="bool" default="false" />
+			<description>
+			Create a nano request that does not have a provided convenience function.
+			</description>
+		</method>
+		<method name="pending">
+			<return type="int" enum="Error" />
+			<argument index="0" name="count" type="int" default="0" />
+			<argument index="1" name="threshold" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="process">
+			<return type="int" enum="Error" />
+			<argument index="0" name="subtype" type="String" />
+			<argument index="1" name="block" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="set_account">
+			<return type="void" />
+			<argument index="0" name="account" type="NanoAccount" />
+			<description>
+			Set the account associated with the requests from this requester.
+			</description>
+		</method>
+		<method name="set_connection_parameters">
+			<return type="void" />
+			<argument index="0" name="node_url" type="String" />
+			<argument index="1" name="auth_header" type="String" default="&quot;&quot;" />
+			<argument index="2" name="use_ssl" type="bool" default="true" />
+			<argument index="3" name="work_url" type="String" default="&quot;&quot;" />
+			<description>
+			Initialize the requester, work_url is an optional value for configurations that use a separate url for work generation.
+			</description>
+		</method>
+		<method name="work_generate">
+			<return type="int" enum="Error" />
+			<argument index="0" name="hash" type="String" />
+			<argument index="1" name="use_peers" type="bool" default="false"/>
+			<description>
+			Make a work_generate request to the node. Will use the work_url if set.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

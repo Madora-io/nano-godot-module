@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NanoWatcher" inherits="Node" version="3.3">
+	<brief_description>
+	Track nano accounts, and optionally automatically receive amounts sent to the account.
+	</brief_description>
+	<description>
+	NanoWatcher uses a websocket connection to be notified of newly confirmed blocks on the network. For more information see https://docs.nano.org/integration-guides/websockets/.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_watched_account">
+			<return type="void" />
+			<argument index="0" name="account" type="NanoAccount" />
+			<description>
+			Adds a single account to the watchlist. If this account has a private key, and auto receive is true, notifications of a send on this account will trigger an automatic receive from this watcher.
+			</description>
+		</method>
+		<method name="initialize_and_connect">
+			<return type="void" />
+			<argument index="0" name="node_url" type="String" />
+			<argument index="1" name="default_representative" type="String" />
+			<argument index="2" name="auth_header" type="String" default="false" />
+			<argument index="3" name="use_ssl" type="bool" default="&quot;&quot;" />
+			<argument index="4" name="work_url" type="String" default="true" />
+			<argument index="5" name="use_peers" type="bool" default="&quot;&quot;" />
+			<description>
+			Must be called to set up the websocket connection.
+			</description>
+		</method>
+		<method name="is_websocket_connected">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="update_watched_accounts">
+			<return type="void" />
+			<argument index="0" name="accounts_add" type="Array" />
+			<argument index="1" name="accounts_del" type="Array" default="[  ]" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="auto_receive" type="bool" setter="set_auto_receive" getter="get_auto_receive" default="true">
+		</member>
+	</members>
+	<signals>
+		<signal name="confirmation_received">
+			<argument index="0" name="json" type="Dictionary" />
+			<description>
+			</description>
+		</signal>
+		<signal name="nano_receive_completed">
+			<argument index="0" name="account" type="Object" />
+			<argument index="1" name="message" type="String" />
+			<argument index="2" name="response_code" type="int" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

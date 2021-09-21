@@ -38,7 +38,7 @@ Error NanoRequest::nano_request(Dictionary body, bool is_work) {
     if(url.empty()) return Error::ERR_UNCONFIGURED;
 
     String action = body["action"];
-    if(!action.empty()) return ERR_INVALID_PARAMETER;
+    if(action.empty()) return ERR_INVALID_PARAMETER;
 
     String data = JSON::print(body);
     Error r = request(url, get_common_headers(), use_ssl, HTTPClient::METHOD_POST, data);
@@ -115,13 +115,14 @@ Error NanoRequest::work_generate(String hash, bool use_peers) {
     Dictionary data;
     data["action"] = "work_generate";
     data["hash"] = hash;
+    if(use_peers) data["use_peers"] = use_peers;
     return nano_request(data);
 }
 
 void NanoRequest::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_account"), &NanoRequest::get_account);
     ClassDB::bind_method(D_METHOD("set_account", "account"), &NanoRequest::set_account);
-    ClassDB::bind_method(D_METHOD("set_connection_parameters", "node_url", "use_ssl", "auth_header", "work_url"), &NanoRequest::set_connection_parameters, DEFVAL(""), DEFVAL(""),  DEFVAL(true));
+    ClassDB::bind_method(D_METHOD("set_connection_parameters", "node_url", "auth_header", "use_ssl", "work_url"), &NanoRequest::set_connection_parameters, DEFVAL(""), DEFVAL(true),  DEFVAL(""));
     ClassDB::bind_method(D_METHOD("basic_auth_header", "username", "password"), &NanoRequest::basic_auth_header);
 
     ClassDB::bind_method(D_METHOD("nano_request", "body", "use_work_url"), &NanoRequest::nano_request, DEFVAL(false));
@@ -131,5 +132,5 @@ void NanoRequest::_bind_methods() {
     ClassDB::bind_method(D_METHOD("block_create", "previous", "representative", "balance", "link", "work"), &NanoRequest::block_create, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("pending", "count", "threshold"), &NanoRequest::pending, DEFVAL(0), DEFVAL(""));
     ClassDB::bind_method(D_METHOD("process", "subtype", "block"), &NanoRequest::process);
-    ClassDB::bind_method(D_METHOD("work_generate", "hash", "use_peers"), &NanoRequest::work_generate);
+    ClassDB::bind_method(D_METHOD("work_generate", "hash", "use_peers"), &NanoRequest::work_generate, DEFVAL(false));
 }

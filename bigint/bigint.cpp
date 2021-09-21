@@ -399,9 +399,40 @@ String Bigint::to_string() {
 
     std::vector<int>::const_reverse_iterator it = number.rbegin() + (number.size() - i - 1);
     out += itos(*it++);
-        for (; it != number.rend(); ++it) {
+    for (; it != number.rend(); ++it) {
         for (int i(0), len = segment_length(*it); i < 9 - len; ++i) out += '0';
         if (*it) out += itos(*it);
+    }
+
+    return out;
+}
+
+const char hex_characters[17] = "0123456789ABCDEF";
+String int_to_hex(int const & in) {
+    int bytes = sizeof(int);
+    String hex = "";
+    for(int i = 0; i < bytes; i++) {
+        int shift = 8 * (bytes - 1 - i);
+        uint8_t c = (in>>shift) & static_cast<uint8_t>(0xFF);
+        hex += hex_characters[c>>4];
+        hex += hex_characters[c%16];
+    }
+    return String(hex);
+}
+
+String Bigint::to_hex() {
+    if (!number.size()) return String("0");
+
+    int i = number.size() - 1;
+    for (; i>=0 && number[i] == 0; --i);
+    if (i == -1) return String("0");
+
+    String out;
+    if (!positive) return String("");
+
+    std::vector<int>::const_reverse_iterator it = number.rbegin() + (number.size() - i - 1);
+    for (; it != number.rend(); ++it) {
+        out += int_to_hex(*it);
     }
 
     return out;

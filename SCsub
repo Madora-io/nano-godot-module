@@ -12,9 +12,7 @@ sources = [
 
     "register_types.cpp",
 
-    # "sha256/sha256.cpp",
-
-    # "qrcode/QrCode.cpp",
+    "qrcode/QrCode.cpp",
 
     "ed25519-donna/ed25519.c",
     "ed25519-donna/ed25519-custom-funcs.cpp",
@@ -24,10 +22,10 @@ sources = [
     "blake2/blake2b-ref.cpp",
 
     "bigint/bigint.cpp"
-
 ]
 
 module_env.add_source_files(env.modules_sources, sources)
 
 module_env.Append(CCFLAGS=['-DED25519_CUSTOMRANDOM', '-DED25519_CUSTOMHASH'])
 module_env.Append(CPPDEFINES=["MODULE_WEBSOCKET_ENABLED"])
+module_env.Append(CPPPATH=["."])

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NanoAmount" inherits="Reference" version="3.3">
+	<brief_description>
+		Represents an amount of Nano.
+	</brief_description>
+	<description>
+		Used to deal with the large sizes for raw amounts of Nano. Get and set functions always deal with a string representing the raw amount. The functions [method get_nano_amount] and [method set_nano_amount] can be used to get and set with NANO amounts (10e30 raw). Internally this uses a Bigint class for representing the amounts.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add">
+			<return type="void" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+				Add another NanoAmount to this amount.
+			</description>
+		</method>
+		<method name="equals">
+			<return type="bool" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+				Returns true if these amounts are equal.
+			</description>
+		</method>
+		<method name="get_friendly_amount">
+			<return type="String" />
+			<argument index="0" name="decimal_places" type="int" default="6" />
+			<description>
+				Return an amount in NANO with the trailing decimals dropped after decimal_places.
+			</description>
+		</method>
+		<method name="greater_than">
+			<return type="bool" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+			</description>
+		</method>
+		<method name="greater_than_or_equal">
+			<return type="bool" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+			</description>
+		</method>
+		<method name="less_than">
+			<return type="bool" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+			</description>
+		</method>
+		<method name="less_than_or_equal">
+			<return type="bool" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+			</description>
+		</method>
+		<method name="sub">
+			<return type="void" />
+			<argument index="0" name="a" type="NanoAmount" />
+			<description>
+				Subtract a NanoAmount from this amount.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="String" setter="set_amount" getter="get_raw_amount">
+		</member>
+		<member name="nano_amount" type="String" setter="set_nano_amount" getter="get_nano_amount">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

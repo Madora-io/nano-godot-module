@@ -63,6 +63,9 @@ void NanoAmount::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "amount", PROPERTY_HINT_TYPE_STRING, ""), "set_amount", "get_raw_amount");
 
     ClassDB::bind_method(D_METHOD("get_nano_amount"), &NanoAmount::get_nano_amount);
+    ClassDB::bind_method(D_METHOD("set_nano_amount", "amount"), &NanoAmount::set_nano_amount);
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "nano_amount", PROPERTY_HINT_TYPE_STRING, ""), "set_nano_amount", "get_nano_amount");
+
     ClassDB::bind_method(D_METHOD("get_friendly_amount", "decimal_places"), &NanoAmount::get_friendly_amount, DEFVAL(6));
 
     ClassDB::bind_method(D_METHOD("add", "a"), &NanoAmount::add);

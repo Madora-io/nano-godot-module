@@ -3,69 +3,71 @@
 #include "core/bind/core_bind.h"
 #include "core/io/json.h"
 
-void NanoSender::_init() {
+NanoSender::NanoSender() {
     state = READY;
-    this->connect("request_completed", &requester, "_nano_send_completed");
+    requester = memnew(NanoRequest);
+    add_child(requester);
+    requester->connect("request_completed", this, "_nano_send_completed");
 }
 
 void NanoSender::cancel_send_request(String error_message, int error_code) {
     state = READY;
-    emit_signal("nano_send_completed", requester.get_account(), error_message, error_code);
+    emit_signal("nano_send_completed", requester->get_account(), error_message, error_code);
     ERR_FAIL_MSG(error_message);
 }
 
 void NanoSender::_nano_send_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
-    if(p_status) cancel_send_request("Could not communicate with node, see Result error.", p_status);
+    if(p_status) return cancel_send_request("Could not communicate with node, see Result error.", p_status);
     
     String json_string;
     json_string.parse_utf8((const char *) p_data.read().ptr(), p_data.size());
-    if(p_code < 200 || p_code >= 300) cancel_send_request("Node url returned failed response, response body: " + json_string, p_code);
+    if(p_code < 200 || p_code >= 300) return cancel_send_request("Node url returned failed response, response body: " + json_string, p_code);
 
     Variant json_result;
     String err_string;
     int err_line;
     Error json_error = JSON::parse(json_string, json_result, err_string, err_line);
-    if(json_error) cancel_send_request("JSON Parsing failed at line " + itos(err_line) + " with message: " + err_string, json_error);
-    Dictionary *json_ptr = Object::cast_to<Dictionary>(json_result);
-    if(json_ptr == NULL) cancel_send_request("JSON response not in expected format: " + json_string, 1);
+    if(json_error) return cancel_send_request("JSON Parsing failed at line " + itos(err_line) + " with message: " + err_string, json_error);
+    Dictionary json = json_result;
+    // if(json_ptr == NULL) cancel_send_request("JSON response not in expected format: " + json_string, 1);
 
     switch (state.load())
     {
     case ACCOUNT:
     {
-        String previous = json_ptr->get("frontier", "");
-        String representative = json_ptr->get("representative", "");
-        String current_balance = json_ptr->get("balance", "");
+        String previous = json.get("frontier", "");
+        String representative = json.get("representative", "");
+        String current_balance = json.get("balance", "");
         Ref<NanoAmount> balance;
         balance->set_amount(current_balance);
         balance->sub(sending_amount);
 
-        if(previous.empty() || representative.empty() || sending_amount.is_null() || destination->get_public_key().empty()) cancel_send_request("Unexpected account state", 1);
+        if(previous.empty() || representative.empty() || sending_amount.is_null() || destination->get_public_key().empty()) return cancel_send_request("Unexpected account state", 1);
 
-        block = requester.block_create(previous, representative, balance, destination->get_public_key());
+        block = requester->block_create(previous, representative, balance, destination->get_public_key());
         state = WORK;
-        requester.work_generate(block["hash"], use_peers);
+        requester->work_generate(block["hash"], use_peers);
         break;
     }
     case WORK:
     {
-        String work = json_ptr->get("work", "");
-        String hash = json_ptr->get("hash", "");
+        String work = json.get("work", "");
+        String hash = json.get("hash", "");
 
-        if(block["hash"] != hash) cancel_send_request("Work hash does not match current block", 1);
+        if(block["hash"] != hash) return cancel_send_request("Work hash does not match current block", 1);
         Dictionary subblock = block["block"];
         subblock["work"] = work;
         block["block"] = subblock;
 
         state = PROCESS;
-        requester.process("send", block);
+        requester->process("send", block);
         break;
     }
     case PROCESS:
     {
-        String hash = json_ptr->get("hash", "");
+        String hash = json.get("hash", "");
         state = READY;
-        emit_signal("nano_send_completed", requester.get_account(), hash, 0);
+        emit_signal("nano_send_completed", requester->get_account(), hash, 0);
         break;
     }
     default:
@@ -96,18 +98,20 @@ void NanoSender::send(Ref<NanoAccount> sender, Ref<NanoAccount> destination, Ref
     ERR_FAIL_COND_MSG(state, "Already in use, only one send can happen per Sender.");
     state = ACCOUNT;
 
-    requester.set_connection_parameters(url, auth, use_ssl, w_url);
-    requester.set_account(sender);
+    requester->set_connection_parameters(url, auth, use_ssl, w_url);
+    requester->set_account(sender);
 
     this->destination = destination;
     this->sending_amount = amount;
 
-    requester.account_info();
+    requester->account_info();
 }
 
 void NanoSender::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("is_ready"), &NanoSender::is_ready);
     ClassDB::bind_method(D_METHOD("send", "sender", "destination", "amount", "url"), &NanoSender::send, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("set_connection_parameters", "node_url", "auth_header", "use_ssl", "work_url", "use_peers"), &NanoSender::set_connection_parameters, DEFVAL(false), DEFVAL(""), DEFVAL(true), DEFVAL(""));
 
+    ClassDB::bind_method(D_METHOD("_nano_send_completed", "p_status", "p_code", "headers", "p_data"), &NanoSender::_nano_send_completed);
     ADD_SIGNAL(MethodInfo("nano_send_completed", PropertyInfo(Variant::OBJECT, "account"), PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::INT, "response_code")));
 }

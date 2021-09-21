@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NanoAccount" inherits="Reference" version="3.3">
+	<brief_description>
+		Holds seed and key information.
+	</brief_description>
+	<description>
+		NanoAccount is a helper class that holds information for interacting with seeds, private keys, public keys, and addresses. It allows generating new seeds, generating qr codes for an account, local block signing, and block hashing. This is used by the other Nano classes to help interact with the Nano network. For more information see https://docs.nano.org/integration-guides/the-basics/#account-key-seed-and-wallet-ids
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="block_hash">
+			<return type="String" />
+			<argument index="0" name="previous" type="String" />
+			<argument index="1" name="representative" type="String" />
+			<argument index="2" name="balance" type="String" />
+			<argument index="3" name="link" type="String" />
+			<description>
+				Create the hash for a block on this account with the given parameters. This is identical to the RPC function [b]block_hash[/b] (https://docs.nano.org/commands/rpc-protocol/#block_hash) without needing to send a private key off of the local device.
+			</description>
+		</method>
+		<method name="get_index">
+			<return type="int" />
+			<description>
+				Return the index of the private key for this account.
+			</description>
+		</method>
+		<method name="get_private_key">
+			<return type="String" />
+			<description>
+				Return the private key for this account, created from the seed and the index. This is what is actually used for signing blocks.
+			</description>
+		</method>
+		<method name="get_public_key">
+			<return type="String" />
+			<description>
+				Return the public key for the account. Not to be confused with [member address].
+			</description>
+		</method>
+		<method name="get_qr_code">
+			<return type="ImageTexture" />
+			<description>
+				Return a qr code representing the address of the account as an ImageTexture. This can be used to create a Sprite, or some other method of display. Mostly used for receiving payments.
+			</description>
+		</method>
+		<method name="get_qr_code_with_amount">
+			<return type="ImageTexture" />
+			<argument index="0" name="amount" type="NanoAmount" />
+			<description>
+				Similar to [method get_qr_code], but including an amount as well as described by the Nano documentation: https://docs.nano.org/integration-guides/the-basics/#uri-and-qr-code-standards.
+			</description>
+		</method>
+		<method name="initialize_with_new_seed">
+			<return type="void" />
+			<description>
+				Initialize this account with a new, securely generated seed.
+			</description>
+		</method>
+		<method name="set_seed_and_index">
+			<return type="void" />
+			<argument index="0" name="seed" type="String" />
+			<argument index="1" name="index" type="int" />
+			<description>
+				Initialize this account with a new seed and index. This allows more control than [method get_seed] which uses a default index of 0. This can be used to create multiple private keys for the same seed by incrementing the index.
+			</description>
+		</method>
+		<method name="sign">
+			<return type="String" />
+			<argument index="0" name="previous" type="String" />
+			<argument index="1" name="representative" type="String" />
+			<argument index="2" name="balance" type="String" />
+			<argument index="3" name="link" type="String" />
+			<description>
+				Returns the signature for a block on this account with the given parameters. Used in conjunction with [method block_hash] to replicate the functionality of the [b]block_create[/b] Node RPC function.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="address" type="String" setter="set_address" getter="get_address">
+			<description>
+			The public address for this account (not to be confused with a public key.) Using set_address will set both the address, and the public key derived from the address.
+			</description>
+		</member>
+		<member name="seed" type="String" setter="set_seed" getter="get_seed">
+			<description>
+			Represents the seed of an account, used to generate all private/public keys. set_seed uses an index of 0 for the seed, and will automatically generate the private key, public key, and address for that seed at index 0.
+			</description>
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

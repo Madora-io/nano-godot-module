@@ -30,6 +30,8 @@ class NanoAmount : public Reference {
         bool less_than(Ref<NanoAmount> a);
         bool less_than_or_equal(Ref<NanoAmount> a);
 
+        String to_hex() { return amount.to_hex(); }
+
 };
 
 #endif

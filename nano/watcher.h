@@ -42,13 +42,14 @@ class NanoWatcher : public Node {
         void add_watched_account(Ref<NanoAccount> account);
         void update_watched_accounts(Array accounts_add, Array accounts_del = Array());
 
-        void _init();
         void _process(float delta);
 
         void set_auto_receive(bool receive) { this->auto_receive = receive; }
         bool get_auto_receive() { return auto_receive; }
 
-        bool is_connected();
+        bool is_websocket_connected();
+
+        NanoWatcher();
 };
 
 #endif

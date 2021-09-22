@@ -22,7 +22,7 @@ class NanoAccount : public Reference {
         uint32_t index;
 
         std::array<uint8_t, 32> preamble;
-        std::array<uint8_t, 32> internal_block_hash(String previous, String representative, String balance, String link);
+        uint256_union internal_block_hash(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link);
 
         void generate_keys_and_address();
     protected:
@@ -43,8 +43,8 @@ class NanoAccount : public Reference {
         Ref<ImageTexture> get_qr_code();
         Ref<ImageTexture> get_qr_code_with_amount(Ref<NanoAmount> amount);
 
-        String block_hash(String previous, String representative, String balance, String link);    
-        String sign(String previous, String representative, String balance, String link);
+        String block_hash(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link);    
+        String sign(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link);
 };
 
 #endif

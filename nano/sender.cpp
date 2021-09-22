@@ -43,8 +43,10 @@ void NanoSender::_nano_send_completed(int p_status, int p_code, const PoolString
         balance->sub(sending_amount);
 
         if(previous.empty() || representative.empty() || sending_amount.is_null() || destination->get_public_key().empty()) return cancel_send_request("Unexpected account state", 1);
+        Ref<NanoAccount> rep;
+        rep->set_address(representative);
 
-        block = requester->block_create(previous, representative, balance, destination->get_public_key());
+        block = requester->block_create(previous, rep, balance, destination->get_public_key());
         state = WORK;
         requester->work_generate(block["hash"], use_peers);
         break;

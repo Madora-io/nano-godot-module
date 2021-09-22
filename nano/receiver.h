@@ -20,7 +20,7 @@ class NanoReceiver : public Node {
         Dictionary block;
 
         String node_url;
-        String default_rep;
+        Ref<NanoAccount> default_rep;
         String work_url;
         String auth;
         bool use_ssl;
@@ -33,7 +33,7 @@ class NanoReceiver : public Node {
     public:
         void _nano_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 
-        void set_connection_parameters(String node_url, String default_representative, String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
+        void set_connection_parameters(String node_url, Ref<NanoAccount> default_representative, String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
 
         void receive(Ref<NanoAccount> receiver, String linked_send_block, Ref<NanoAmount> amount, String override_url = "");
         bool is_ready() { return state.load() == READY; }

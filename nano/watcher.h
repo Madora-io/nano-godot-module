@@ -19,7 +19,7 @@ class NanoWatcher : public Node {
 
         bool auto_receive = true;
         String node_url;
-        String default_rep;
+        Ref<NanoAccount> default_rep;
         String auth_header;
         bool use_ssl;
         String work_url;
@@ -30,6 +30,8 @@ class NanoWatcher : public Node {
         void _on_data();
         void _auto_recieve_completed(Ref<NanoAccount> account, String message, int code);
 
+        void send_accounts_to_node();
+
         Array receiver_pool;
         NanoReceiver * get_free_receiver();
 
@@ -38,7 +40,7 @@ class NanoWatcher : public Node {
     protected:
         static void _bind_methods();
     public:
-        void initialize_and_connect(String node_url, String default_representative, String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
+        void initialize_and_connect(String node_url, Ref<NanoAccount> default_representative, String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
         void add_watched_account(Ref<NanoAccount> account);
         void update_watched_accounts(Array accounts_add, Array accounts_del = Array());
 

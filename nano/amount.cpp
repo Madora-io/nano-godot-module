@@ -1,7 +1,7 @@
 #include "amount.h"
 
 String NanoAmount::get_nano_amount() {
-    String str_amount = amount.to_string();
+    String str_amount = amount.to_string_dec();
     int length = str_amount.length();
     if(length > 30)
         str_amount = str_amount.insert(length - 30, ".");
@@ -28,7 +28,7 @@ void NanoAmount::set_amount(String a) {
     ERR_FAIL_INDEX_MSG(a.length(), 39, vformat("Nano amount is larger than maximum possible value."))
     ERR_FAIL_COND_MSG(!a.is_valid_integer(), vformat("Amount is not an integer."))
     ERR_FAIL_COND_MSG(a[0] == '-', vformat("Amount cannot be negative."))
-    amount = a;
+    amount.decode_dec(a);
 }
 
 void NanoAmount::set_nano_amount(String a) {
@@ -36,7 +36,7 @@ void NanoAmount::set_nano_amount(String a) {
     ERR_FAIL_COND_MSG(!a.is_numeric(), vformat("Amount is not in valid format."))
     ERR_FAIL_COND_MSG(a[0] == '-', vformat("Amount cannot be negative."))
     int decimal_place = a.find_char('.');
-    if(decimal_place == -1) amount = a + "000000000000000000000000000000";
+    if(decimal_place == -1) amount.decode_dec(a + "000000000000000000000000000000");
     else {
         int zeros_needed = 30 - (a.length() - decimal_place);
         char zero_arr[zeros_needed + 1];
@@ -44,18 +44,18 @@ void NanoAmount::set_nano_amount(String a) {
         zero_arr[zeros_needed] = '\0';
 
         a.remove(decimal_place);
-        amount = a + zero_arr;
+        amount.decode_dec(a + zero_arr);
     }
 }
 
-void NanoAmount::add(Ref<NanoAmount> a) { amount += a->amount; }
-void NanoAmount::sub(Ref<NanoAmount> a) { amount -= a->amount; }
+void NanoAmount::add(Ref<NanoAmount> a) { amount = amount.number() + a->amount.number(); }
+void NanoAmount::sub(Ref<NanoAmount> a) { amount = amount.number() - a->amount.number(); }
 
-bool NanoAmount::equals(Ref<NanoAmount> a) { return amount == a->amount; }
-bool NanoAmount::greater_than(Ref<NanoAmount> a) { return amount > a->amount; }
-bool NanoAmount::greater_than_or_equal(Ref<NanoAmount> a) { return amount >= a->amount; }
-bool NanoAmount::less_than(Ref<NanoAmount> a) { return amount < a->amount; }
-bool NanoAmount::less_than_or_equal(Ref<NanoAmount> a) { return amount <= a->amount; }
+bool NanoAmount::equals(Ref<NanoAmount> a) { return amount.number() == a->amount.number(); }
+bool NanoAmount::greater_than(Ref<NanoAmount> a) { return amount.number() > a->amount.number(); }
+bool NanoAmount::greater_than_or_equal(Ref<NanoAmount> a) { return amount.number() >= a->amount.number(); }
+bool NanoAmount::less_than(Ref<NanoAmount> a) { return amount.number() < a->amount.number(); }
+bool NanoAmount::less_than_or_equal(Ref<NanoAmount> a) { return amount.number() <= a->amount.number(); }
 
 void NanoAmount::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_amount", "amount"), &NanoAmount::set_amount);

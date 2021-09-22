@@ -41,11 +41,15 @@ void NanoReceiver::_nano_request_completed(int p_status, int p_code, const PoolS
             String previous = json.get("frontier", "");
             String representative = json.get("representative", "");
             String current_balance = json.get("balance", "");
-            Ref<NanoAmount> balance;
+            Ref<NanoAmount> balance(memnew(NanoAmount));
             balance->set_amount(current_balance);
             balance->add(sending_amount);
 
-            block = requester->block_create(previous, representative, balance, linked_send_block);
+            if(previous.empty() || representative.empty() || sending_amount.is_null()) return cancel_receive_request("Unexpected account state", 1);
+            Ref<NanoAccount> rep(memnew(NanoAccount));
+            rep->set_address(representative);
+            
+            block = requester->block_create(previous, rep, balance, linked_send_block);
             state = WORK;
             requester->work_generate(previous, use_peers);
         } else { // This account hasn't been opened, so this must be the first receive
@@ -92,7 +96,7 @@ void NanoReceiver::_nano_request_completed(int p_status, int p_code, const PoolS
     }
 }
 
-void NanoReceiver::set_connection_parameters(String node_url, String default_representative, String auth_header, bool use_ssl, String work_url, bool use_peers) {
+void NanoReceiver::set_connection_parameters(String node_url, Ref<NanoAccount> default_representative, String auth_header, bool use_ssl, String work_url, bool use_peers) {
     this->node_url = node_url;
     this->default_rep = default_representative;
     if(work_url.empty()) this->work_url = node_url;

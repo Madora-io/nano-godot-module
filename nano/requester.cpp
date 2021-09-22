@@ -67,14 +67,15 @@ Error NanoRequest::account_info(bool include_confirmed) {
     return nano_request(data);
 }
 
-Dictionary NanoRequest::block_create(String previous, String representative, Ref<NanoAmount> balance, String link, String work) {
-    String signature = account->sign(previous, representative, balance->get_raw_amount(), link);
+Dictionary NanoRequest::block_create(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link, String work) {
+    uint256_union prev(previous);
+    String signature = account->sign(prev.to_string(), representative, balance, link);
 
     Dictionary block;
     block["type"] = "state";
     block["account"] = account->get_address();
-    block["previous"] = previous;
-    block["representative"] = representative;
+    block["previous"] = prev.to_string();
+    block["representative"] = representative->get_address();
     block["balance"] = balance->get_raw_amount();
     block["link"] = link;
     block["signature"] = signature;
@@ -82,7 +83,7 @@ Dictionary NanoRequest::block_create(String previous, String representative, Ref
 
     Dictionary dict;
     dict["block"] = block;
-    dict["hash"] = account->block_hash(previous, representative, balance->get_raw_amount(), link);
+    dict["hash"] = account->block_hash(previous, representative, balance, link);
     return dict;
 }
 

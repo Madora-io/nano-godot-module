@@ -1,21 +1,21 @@
 #ifndef NANO_AMOUNT_H_
 #define NANO_AMOUNT_H_
 
-#include "../bigint/bigint.h"
+#include "numbers.h"
 
-using namespace Dodecahedron;
+using namespace nano;
 
 class NanoAmount : public Reference {
     GDCLASS(NanoAmount, Reference);
 
     private:
-        Bigint amount;
-        void _set_amount(Bigint a);
+        uint128_union amount;
+        void _set_amount(uint128_union a);
 
     protected:
         static void _bind_methods();
     public:
-        String get_raw_amount() { return amount.to_string(); };
+        String get_raw_amount() { return amount.to_string_dec(); };
         String get_nano_amount();
         String get_friendly_amount(int);
         void set_amount(String a);
@@ -30,7 +30,8 @@ class NanoAmount : public Reference {
         bool less_than(Ref<NanoAmount> a);
         bool less_than_or_equal(Ref<NanoAmount> a);
 
-        String to_hex() { return amount.to_hex(); }
+        uint128_union get_amount() { return amount; }
+        String to_hex() { return amount.to_string(); }
 
 };
 

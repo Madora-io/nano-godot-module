@@ -5,9 +5,10 @@ module_env = env.Clone()
 sources = [
     "nano/account.cpp",
     "nano/amount.cpp",
+    "nano/numbers.cpp",
+    "nano/receiver.cpp",
     "nano/requester.cpp",
     "nano/sender.cpp",
-    "nano/receiver.cpp",
     "nano/watcher.cpp",
 
     "register_types.cpp",
@@ -19,9 +20,7 @@ sources = [
 
     "duthomhas/csprng.cpp",
 
-    "blake2/blake2b-ref.cpp",
-
-    "bigint/bigint.cpp"
+    "blake2/blake2b-ref.cpp"
 ]
 
 module_env.add_source_files(env.modules_sources, sources)

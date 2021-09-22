@@ -44,7 +44,7 @@ Ref<NanoAccount> NanoWatcher::lookup_watched_account(String address) {
     return NULL;
 }
 
-void NanoWatcher::initialize_and_connect(String node_url, String default_representative, String auth_header, bool use_ssl, String work_url, bool use_peers) {
+void NanoWatcher::initialize_and_connect(String node_url, Ref<NanoAccount> default_representative, String auth_header, bool use_ssl, String work_url, bool use_peers) {
     this->node_url = node_url;
     this->default_rep = default_representative;
     if(work_url.empty()) this->work_url = node_url;
@@ -59,6 +59,21 @@ void NanoWatcher::initialize_and_connect(String node_url, String default_represe
 
     ERR_FAIL_COND_MSG(_client.is_null(), "Client was null, connection not established");
     _client->connect_to_url(node_url, Vector<String>(), false, headers);
+}
+
+void NanoWatcher::_connected(String proto) {
+    Dictionary request;
+    request["topic"] = "confirmation";
+
+    Dictionary options;
+    request["action"] = "subscribe";
+    options["accounts"] = watched_accounts;
+    
+    request["options"] = options;
+    String data = JSON::print(request);
+
+    _client->get_peer(1)->set_write_mode(WebSocketPeer::WRITE_MODE_BINARY);
+    _client->get_peer(1)->put_packet(reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
 }
 
 bool NanoWatcher::is_websocket_connected() { return _client->get_connection_status() == WebSocketClient::CONNECTION_CONNECTED; }
@@ -76,23 +91,25 @@ void NanoWatcher::update_watched_accounts(Array accounts_add, Array accounts_del
 
     watched_accounts.append_array(accounts_add);
 
-    Dictionary request;
-    request["topic"] = "confirmation";
+    if(is_websocket_connected()) {
+        Dictionary request;
+        request["topic"] = "confirmation";
 
-    Dictionary options;
-    if(subscribed){
-        request["action"] = "update";
-        options["accounts_add"] = accounts_add;
-        options["accounts_del"] = accounts_del;
-    } else {
-        request["action"] = "subscribe";
-        options["accounts"] = watched_accounts;
+        Dictionary options;
+        if(subscribed){
+            request["action"] = "update";
+            options["accounts_add"] = accounts_add;
+            options["accounts_del"] = accounts_del;
+        } else {
+            request["action"] = "subscribe";
+            options["accounts"] = watched_accounts;
+        }
+        request["options"] = options;
+        String data = JSON::print(request);
+
+        _client->get_peer(1)->set_write_mode(WebSocketPeer::WRITE_MODE_BINARY);
+        _client->get_peer(1)->put_packet(reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
     }
-    request["options"] = options;
-    String data = JSON::print(request);
-
-    _client->get_peer(1)->set_write_mode(WebSocketPeer::WRITE_MODE_BINARY);
-    _client->get_peer(1)->put_packet(reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
 }
 
 void NanoWatcher::_closed(bool was_clean) {

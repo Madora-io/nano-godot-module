@@ -15,12 +15,13 @@ const char base32_characters[33] = "13456789abcdefghijkmnopqrstuwxyz";
 const char hex_characters[17] = "0123456789ABCDEF";
 char const * account_reverse ("~0~1234567~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~89:;<=>?@AB~CDEFGHIJK~LMNO~~~~~");
 
-void key_string_to_bytes(String const & in, std::array<uint8_t, 32> & out){
+int key_string_to_bytes(String const & in, std::array<uint8_t, 32> & out){
     // Seed, Private Key, and Public Key should all be 64 Hexadecimal characters (representing 32 bytes of data)
-    ERR_FAIL_COND_MSG(in.length() != 64, "String has incorrect length: " + itos(in.length()) + " String: " + in);
+    ERR_FAIL_COND_V_MSG(in.length() != 64, 1, "String has incorrect length: " + itos(in.length()) + " String: " + in);
     for(int i = 0; i < in.length(); i+=2){
         out[i/2] = in.substr(i, 2).hex_to_int(false);
     }
+    return 0;
 }
 
 void key_string_to_bytes16(String const & in, std::array<uint8_t, 16> & out){
@@ -80,25 +81,25 @@ uint8_t account_decode (char value)
 	return result;
 }
 
-void NanoAccount::set_address(String const & a) {
+int NanoAccount::set_address(String const & a) {
     if(this->address.empty()){
         this->address = a;
 
         String encoded_val = "";
         if(address.begins_with("nano_")){
-            ERR_FAIL_COND_MSG(address.length() != 65, "Invalid nano address");
+            ERR_FAIL_COND_V_MSG(address.length() != 65, 1, "Invalid nano address");
             encoded_val = address.substr(5);
         } else if(address.begins_with("xrb_")){
-            ERR_FAIL_COND_MSG(address.length() != 64, "Invalid xrb address");
+            ERR_FAIL_COND_V_MSG(address.length() != 64, 1, "Invalid xrb address");
             encoded_val = address.substr(4);
-        } else ERR_FAIL_MSG("Address is invalid.")
+        } else ERR_FAIL_V_MSG(1, "Address is invalid.")
 
-        ERR_FAIL_COND_MSG(encoded_val[0] != '1' && encoded_val[0] != '3', "Invalid address");
+        ERR_FAIL_COND_V_MSG(encoded_val[0] != '1' && encoded_val[0] != '3', 1, "Invalid address");
 
         boost::multiprecision::uint512_t decoded;
         for(int i = 0; i < encoded_val.length(); i++){
             uint8_t byte = account_decode(encoded_val[i]);
-            ERR_FAIL_COND_MSG(byte == '~', "Invalid address");
+            ERR_FAIL_COND_V_MSG(byte == '~', 1, "Invalid address");
             decoded <<= 5;
             decoded += byte;
         }
@@ -112,8 +113,9 @@ void NanoAccount::set_address(String const & a) {
         blake2b_init (&hash, 5);
         blake2b_update (&hash, public_key.data(), public_key.size());
         blake2b_final (&hash, reinterpret_cast<uint8_t *> (&validation), 5);
-        ERR_FAIL_COND_MSG(checksum != validation, "Checksum does not match");
+        ERR_FAIL_COND_V_MSG(checksum != validation, 1, "Checksum does not match");
     }
+    return 0;
 }
 
 NanoAccount::NanoAccount() {
@@ -152,15 +154,16 @@ void NanoAccount::initialize_with_new_seed() {
     generate_keys_and_address();
 }
 
-void NanoAccount::set_seed(String const & s) {
-    set_seed_and_index(s, 0);
+int NanoAccount::set_seed(String const & s) {
+    return set_seed_and_index(s, 0);
 }
 
-void NanoAccount::set_seed_and_index(String const & s, uint32_t index) {
-    key_string_to_bytes(s, seed);
+int NanoAccount::set_seed_and_index(String const & s, uint32_t index) {
+    if(key_string_to_bytes(s, seed)) return 1;
     this->index = index;
 
     generate_keys_and_address();
+    return 0;
 }
 
 Ref<ImageTexture> get_qr_code_for_text(String text) {

@@ -51,12 +51,12 @@ void NanoReceiver::_nano_request_completed(int p_status, int p_code, const PoolS
             
             block = requester->block_create(previous, rep, balance, linked_send_block);
             state = WORK;
-            requester->work_generate(previous, use_peers);
+            requester->work_generate(previous, use_peers, "fffffe0000000000");
         } else { // This account hasn't been opened, so this must be the first receive
             if(error != "Account not found") return cancel_receive_request("JSON Parsing failed at line " + itos(err_line) + " with message: " + err_string, json_error);
             block = requester->block_create("0", default_rep, sending_amount, linked_send_block);
             state = WORK;
-            requester->work_generate(requester->get_account()->get_public_key(), use_peers);
+            requester->work_generate(requester->get_account()->get_public_key(), use_peers, "fffffe0000000000");
         }
         break;
     }
@@ -76,8 +76,6 @@ void NanoReceiver::_nano_request_completed(int p_status, int p_code, const PoolS
         String subtype;
         if(subblock.get("previous", "0") == "0") subtype = "open";
         else subtype = "receive";
-        print_line("Subtype is: " + subtype);
-        print_line("Block is: " + JSON::print(subblock));
         requester->process(subtype, subblock);
         break;
     }

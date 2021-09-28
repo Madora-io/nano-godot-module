@@ -10,7 +10,6 @@ class NanoAmount : public Reference {
 
     private:
         uint128_union amount;
-        void _set_amount(uint128_union a);
 
     protected:
         static void _bind_methods();
@@ -18,8 +17,8 @@ class NanoAmount : public Reference {
         String get_raw_amount() { return amount.to_string_dec(); };
         String get_nano_amount();
         String get_friendly_amount(int);
-        void set_amount(String a);
-        void set_nano_amount(String a);
+        int set_amount(String a);
+        int set_nano_amount(String a);
 
         void add(Ref<NanoAmount> a);
         void sub(Ref<NanoAmount> a);

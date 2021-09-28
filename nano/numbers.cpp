@@ -11,25 +11,25 @@ namespace
 {
 const char hex_characters[17] = "0123456789ABCDEF";
 
-char const * account_lookup ("13456789abcdefghijkmnopqrstuwxyz");
-char const * account_reverse ("~0~1234567~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~89:;<=>?@AB~CDEFGHIJK~LMNO~~~~~");
-char account_encode (uint8_t value)
-{
-	ERR_FAIL_COND_V_MSG(value >= 32, '0', "Invalid value for account encode: " + itos(value));
-	auto result (account_lookup[value]);
-	return result;
-}
-uint8_t account_decode (char value)
-{
-	ERR_FAIL_COND_V(value < '0', '~');
-	ERR_FAIL_COND_V(value > '~', '~');
-	auto result (account_reverse[value - 0x30]);
-	if (result != '~')
-	{
-		result -= 0x30;
-	}
-	return result;
-}
+// char const * account_lookup ("13456789abcdefghijkmnopqrstuwxyz");
+// char const * account_reverse ("~0~1234567~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~89:;<=>?@AB~CDEFGHIJK~LMNO~~~~~");
+// char account_encode (uint8_t value)
+// {
+// 	ERR_FAIL_COND_V_MSG(value >= 32, '0', "Invalid value for account encode: " + itos(value));
+// 	auto result (account_lookup[value]);
+// 	return result;
+// }
+// uint8_t account_decode (char value)
+// {
+// 	ERR_FAIL_COND_V(value < '0', '~');
+// 	ERR_FAIL_COND_V(value > '~', '~');
+// 	auto result (account_reverse[value - 0x30]);
+// 	if (result != '~')
+// 	{
+// 		result -= 0x30;
+// 	}
+// 	return result;
+// }
 
 String uint8_t_to_hex(uint8_t const & in) {
     char hex[3] = {hex_characters[in/16], hex_characters[in%16], '\0'};
@@ -216,9 +216,9 @@ void nano::uint256_union::encode_hex (String & text) const
 	text = bytes_to_key_string(bytes.begin(), bytes.end());
 }
 
-void nano::uint256_union::decode_hex (String const & text)
+int nano::uint256_union::decode_hex (String const & text)
 {
-    ERR_FAIL_COND_MSG(text.empty() || text.length() > 64, "Invalid text for uint256: " + text);
+    ERR_FAIL_COND_V_MSG(text.empty() || text.length() > 64, 1, "Invalid text for uint256: " + text);
     const char * c_text = text.ascii();
     std::stringstream stream (c_text);
     stream << std::hex << std::noshowbase;
@@ -227,12 +227,13 @@ void nano::uint256_union::decode_hex (String const & text)
     {
         stream >> number_l;
         *this = number_l;
-        ERR_FAIL_COND_MSG(!stream.eof(), "Invalid text for uint256 (likely too large): " + text);
+        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
     }
     catch (std::runtime_error &)
     {
-        ERR_FAIL_MSG("Invalid text for uint256: " + text);
+        ERR_FAIL_V_MSG(1, "Invalid text for uint256: " + text);
     }
+    return 0;
 }
 
 void nano::uint256_union::encode_dec (String & text) const
@@ -243,11 +244,10 @@ void nano::uint256_union::encode_dec (String & text) const
 	text = stream.str().c_str();
 }
 
-void nano::uint256_union::decode_dec (String const & text)
+int nano::uint256_union::decode_dec (String const & text)
 {
-    ERR_FAIL_COND_MSG(text.size () > 78, "Text too large");
-    // ERR_FAIL_COND_MSG((text.size () > 1 && text.begins_with("0")), "Text starts with 0, but is not 0");
-    ERR_FAIL_COND_MSG((!text.empty () && text.begins_with("-")), "uint256 cannot be negative");
+    ERR_FAIL_COND_V_MSG(text.size () > 78, 1, "Text too large");
+    ERR_FAIL_COND_V_MSG((!text.empty () && text.begins_with("-")), 1, "uint256 cannot be negative");
     const char * c_text = text.ascii();
     std::stringstream stream (c_text);
     stream << std::dec << std::noshowbase;
@@ -256,12 +256,13 @@ void nano::uint256_union::decode_dec (String const & text)
     {
         stream >> number_l;
         *this = number_l;
-        ERR_FAIL_COND_MSG(!stream.eof(), "Invalid text for uint256 (likely too large): " + text);
+        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
     }
     catch (std::runtime_error &)
     {
-        ERR_FAIL_MSG("Invalid text for uint256: " + text);
+        ERR_FAIL_V_MSG(1, "Invalid text for uint256: " + text);
     }
+    return 0;
 }
 
 nano::uint256_union::uint256_union (uint64_t value0)
@@ -324,9 +325,9 @@ void nano::uint512_union::encode_hex (String & text) const
 	text = bytes_to_key_string(bytes.begin(), bytes.end());
 }
 
-void nano::uint512_union::decode_hex (String const & text)
+int nano::uint512_union::decode_hex (String const & text)
 {
-	ERR_FAIL_COND_MSG(text.length () > 128, "Value too large");
+	ERR_FAIL_COND_V_MSG(text.length () > 128, 1, "Value too large");
 	
     const char * c_text = text.ascii();
     std::stringstream stream (c_text);
@@ -336,12 +337,13 @@ void nano::uint512_union::decode_hex (String const & text)
     {
         stream >> number_l;
         *this = number_l;
-        ERR_FAIL_COND_MSG(!stream.eof(), "Invalid text for uint512 (likely too large): " + text);
+        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint512 (likely too large): " + text);
     }
     catch (std::runtime_error &)
     {
-        ERR_FAIL_MSG("Invalid text for uint512: " + text);
+        ERR_FAIL_V_MSG(1, "Invalid text for uint512: " + text);
     }
+    return 0;
 }
 
 bool nano::uint512_union::operator!= (nano::uint512_union const & other_a) const
@@ -472,9 +474,9 @@ void nano::uint128_union::encode_hex (String & text) const
 	text = bytes_to_key_string(bytes.begin(), bytes.end());
 }
 
-void nano::uint128_union::decode_hex (String const & text)
+int nano::uint128_union::decode_hex (String const & text)
 {
-    ERR_FAIL_COND_MSG(text.length () > 32, "Value too large");
+    ERR_FAIL_COND_V_MSG(text.length () > 32, 1, "Value too large");
 
 
     const char * c_text = text.ascii();
@@ -485,12 +487,13 @@ void nano::uint128_union::decode_hex (String const & text)
     {
         stream >> number_l;
         *this = number_l;
-        ERR_FAIL_COND_MSG(!stream.eof(), "Invalid text for uint128 (likely too large): " + text);
+        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
     }
     catch (std::runtime_error &)
     {
-        ERR_FAIL_MSG("Invalid text for uint128: " + text);
+        ERR_FAIL_V_MSG(1, "Invalid text for uint128: " + text);
     }
+    return 0;
 }
 
 void nano::uint128_union::encode_dec (String & text) const
@@ -501,11 +504,10 @@ void nano::uint128_union::encode_dec (String & text) const
 	text = stream.str().c_str();
 }
 
-void nano::uint128_union::decode_dec (String const & text, bool decimal)
+int nano::uint128_union::decode_dec (String const & text, bool decimal)
 {
-    ERR_FAIL_COND_MSG(text.size () > 39, "Text too large");
-    // ERR_FAIL_COND_MSG((text.size () > 1 && text.begins_with("0")), "Text starts with 0, but is not 0");
-    ERR_FAIL_COND_MSG((!text.empty () && text.begins_with("-")), "uint128 cannot be negative");
+    ERR_FAIL_COND_V_MSG(text.size () > 39, 1, "Text too large");
+    ERR_FAIL_COND_V_MSG((!text.empty () && text.begins_with("-")), 1, "uint128 cannot be negative");
 
     const char * c_text = text.ascii();
     std::stringstream stream (c_text);
@@ -516,13 +518,13 @@ void nano::uint128_union::decode_dec (String const & text, bool decimal)
         stream >> number_l;
         nano::uint128_t unchecked (number_l);
         *this = unchecked;
-        ERR_FAIL_COND_MSG(!stream.eof(), "Invalid text for uint128 (likely too large): " + text);
+        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
     }
     catch (std::runtime_error &)
     {
-        ERR_FAIL_MSG("Invalid text for uint128: " + text);
+        ERR_FAIL_V_MSG(1, "Invalid text for uint128: " + text);
     }
-
+    return 0;
 }
 
 void nano::uint128_union::clear ()

@@ -21,52 +21,58 @@ void NanoSender::_nano_send_completed(int p_status, int p_code, const PoolString
     
     String json_string;
     json_string.parse_utf8((const char *) p_data.read().ptr(), p_data.size());
-    if(p_code < 200 || p_code >= 300) return cancel_send_request("Node url returned failed response, response body: " + json_string, p_code);
 
     Variant json_result;
     String err_string;
     int err_line;
     Error json_error = JSON::parse(json_string, json_result, err_string, err_line);
-    if(json_error) return cancel_send_request("JSON Parsing failed at line " + itos(err_line) + " with message: " + err_string, json_error);
-    Dictionary json = json_result;
-    // if(json_ptr == NULL) cancel_send_request("JSON response not in expected format: " + json_string, 1);
+    Dictionary json;
+    if(json_error) json["error"] = json_string;
+    else json = json_result;
 
     switch (state.load())
     {
     case ACCOUNT:
     {
+        String error = json.get("error", "");
+        if(!error.empty()) return cancel_send_request("Error on account info call: " + error, 1);
+        
         String previous = json.get("frontier", "");
         String representative = json.get("representative", "");
         String current_balance = json.get("balance", "");
-        Ref<NanoAmount> balance;
+        Ref<NanoAmount> balance(memnew(NanoAmount));
         balance->set_amount(current_balance);
         balance->sub(sending_amount);
 
         if(previous.empty() || representative.empty() || sending_amount.is_null() || destination->get_public_key().empty()) return cancel_send_request("Unexpected account state", 1);
-        Ref<NanoAccount> rep;
-        rep->set_address(representative);
+        Ref<NanoAccount> rep(memnew(NanoAccount));
+        if(rep->set_address(representative)) return cancel_send_request("Invalid representative address", 1);
 
         block = requester->block_create(previous, rep, balance, destination->get_public_key());
         state = WORK;
-        requester->work_generate(block["hash"], use_peers);
+        requester->work_generate(previous, use_peers);
         break;
     }
     case WORK:
     {
+        String error = json.get("error", "");
+        if(!error.empty()) return cancel_send_request("Error on work generate call: " + error, 1);
+
         String work = json.get("work", "");
         String hash = json.get("hash", "");
 
-        if(block["hash"] != hash) return cancel_send_request("Work hash does not match current block", 1);
         Dictionary subblock = block["block"];
         subblock["work"] = work;
         block["block"] = subblock;
 
         state = PROCESS;
-        requester->process("send", block);
+        requester->process("send", subblock);
         break;
     }
     case PROCESS:
     {
+        String error = json.get("error", "");
+        if(!error.empty()) return cancel_send_request("Error on process call: " + error, 1);
         String hash = json.get("hash", "");
         state = READY;
         emit_signal("nano_send_completed", requester->get_account(), hash, 0);

@@ -112,10 +112,11 @@ Error NanoRequest::process(String subtype, Dictionary block) {
     return nano_request(data);
 }
 
-Error NanoRequest::work_generate(String hash, bool use_peers) {
+Error NanoRequest::work_generate(String hash, bool use_peers, String difficulty) {
     Dictionary data;
     data["action"] = "work_generate";
     data["hash"] = hash;
+    data["difficulty"] = difficulty;
     if(use_peers) data["use_peers"] = use_peers;
     return nano_request(data);
 }
@@ -133,5 +134,5 @@ void NanoRequest::_bind_methods() {
     ClassDB::bind_method(D_METHOD("block_create", "previous", "representative", "balance", "link", "work"), &NanoRequest::block_create, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("pending", "count", "threshold"), &NanoRequest::pending, DEFVAL(0), DEFVAL(""));
     ClassDB::bind_method(D_METHOD("process", "subtype", "block"), &NanoRequest::process);
-    ClassDB::bind_method(D_METHOD("work_generate", "hash", "use_peers"), &NanoRequest::work_generate, DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("work_generate", "hash", "use_peers", "difficulty"), &NanoRequest::work_generate, DEFVAL("fffffff800000000"), DEFVAL(false));
 }

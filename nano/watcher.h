@@ -16,8 +16,10 @@ class NanoWatcher : public Node {
 
         Array watched_accounts;
         bool subscribed;
+        Timer * timer;
 
         bool auto_receive = true;
+        String websocket_url;
         String node_url;
         Ref<NanoAccount> default_rep;
         String auth_header;
@@ -28,23 +30,25 @@ class NanoWatcher : public Node {
         void _closed(bool was_clean = false);
         void _connected(String proto = "");
         void _on_data();
-        void _auto_recieve_completed(Ref<NanoAccount> account, String message, int code);
 
-        void send_accounts_to_node();
+        void write_data(String data);
 
-        Array receiver_pool;
-        NanoReceiver * get_free_receiver();
+        Array pending_receives;
+        NanoReceiver * receiver;
+        void process_next_receive();
 
         Ref<NanoAccount> lookup_watched_account(String address);
 
     protected:
         static void _bind_methods();
     public:
-        void initialize_and_connect(String node_url, Ref<NanoAccount> default_representative, String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
+        Error initialize_and_connect(String websocket_url, Ref<NanoAccount> default_representative, String node_url = "", String auth_header = "", bool use_ssl = true, String work_url = "", bool use_peers = false);
         void add_watched_account(Ref<NanoAccount> account);
         void update_watched_accounts(Array accounts_add, Array accounts_del = Array());
 
-        void _process(float delta);
+        void _notification(int what);
+        void _on_timeout();
+        void _auto_receive_completed(Ref<NanoAccount> account, String message, int code);
 
         void set_auto_receive(bool receive) { this->auto_receive = receive; }
         bool get_auto_receive() { return auto_receive; }

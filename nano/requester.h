@@ -39,7 +39,7 @@ class NanoRequest : public HTTPRequest {
         Dictionary block_create(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link, String work = ""); // This does not make a request to node, but instead signs locally.
         Error pending(int count = 0, String threshold = "");
         Error process(String subtype, Dictionary block);
-        Error work_generate(String hash, bool use_peers = false);
+        Error work_generate(String hash, bool use_peers = false, String difficulty = "fffffff800000000");
 };
 
 #endif

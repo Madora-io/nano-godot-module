@@ -35,9 +35,9 @@ public:
 	bool operator< (nano::uint128_union const &) const;
 	bool operator> (nano::uint128_union const &) const;
 	void encode_hex (String &) const;
-	void decode_hex (String const &);
+	int decode_hex (String const &);
 	void encode_dec (String &) const;
-	void decode_dec (String const &, bool = false);
+	int decode_dec (String const &, bool = false);
 	nano::uint128_t number () const;
 	void clear ();
 	bool is_zero () const;
@@ -68,9 +68,9 @@ union uint256_union final
 	bool operator!= (nano::uint256_union const &) const;
 	bool operator< (nano::uint256_union const &) const;
 	void encode_hex (String &) const;
-	void decode_hex (String const &);
+	int decode_hex (String const &);
 	void encode_dec (String &) const;
-	void decode_dec (String const &);
+	int decode_dec (String const &);
 	void encode_account (String &) const;
 	String to_account () const;
 	bool decode_account (String const &);
@@ -108,7 +108,7 @@ union uint512_union final
 	bool operator!= (nano::uint512_union const &) const;
 	nano::uint512_union & operator^= (nano::uint512_union const &);
 	void encode_hex (String &) const;
-	void decode_hex (String const &);
+	int decode_hex (String const &);
 	std::array<uint8_t, 64> bytes;
 	std::array<uint32_t, 16> dwords;
 	std::array<uint64_t, 8> qwords;

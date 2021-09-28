@@ -30,14 +30,14 @@ class NanoAccount : public Reference {
     public:
         NanoAccount();
         void initialize_with_new_seed(); // Create an account with a newly generated seed
-        void set_seed(String const &); // Create first account from seed
-        void set_seed_and_index(String const &, uint32_t); // Create account from seed and index
+        int set_seed(String const &); // Create first account from seed
+        int set_seed_and_index(String const &, uint32_t); // Create account from seed and index
 
         String get_seed(); // Return the seed as a hex value
         String get_private_key();
         String get_public_key();
         int get_index() { return index; }
-        void set_address(String const & a);
+        int set_address(String const & a);
         String get_address() { return address; }
 
         Ref<ImageTexture> get_qr_code();

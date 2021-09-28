@@ -24,27 +24,29 @@ String NanoAmount::get_friendly_amount(int decimal_places = 6) {
     return amount.substr(0, decimal_place + decimal_places);
 }
 
-void NanoAmount::set_amount(String a) {
-    ERR_FAIL_INDEX_MSG(a.length(), 39, vformat("Nano amount is larger than maximum possible value."))
-    ERR_FAIL_COND_MSG(!a.is_valid_integer(), vformat("Amount is not an integer."))
-    ERR_FAIL_COND_MSG(a[0] == '-', vformat("Amount cannot be negative."))
-    amount.decode_dec(a);
+int NanoAmount::set_amount(String a) {
+    ERR_FAIL_INDEX_V_MSG(a.length(), 39, 1, vformat("Nano amount is larger than maximum possible value."));
+    ERR_FAIL_COND_V_MSG(!a.is_valid_integer(), 1, vformat("Amount is not an integer."));
+    ERR_FAIL_COND_V_MSG(a[0] == '-', 1, vformat("Amount cannot be negative."));
+    return amount.decode_dec(a);
 }
 
-void NanoAmount::set_nano_amount(String a) {
-    ERR_FAIL_INDEX_MSG(a.length(), 40, vformat("Nano amount is larger than maximum possible value."))
-    ERR_FAIL_COND_MSG(!a.is_numeric(), vformat("Amount is not in valid format."))
-    ERR_FAIL_COND_MSG(a[0] == '-', vformat("Amount cannot be negative."))
+int NanoAmount::set_nano_amount(String a) {
+    ERR_FAIL_INDEX_V_MSG(a.length(), 40, 1, vformat("Nano amount is larger than maximum possible value."))
+    ERR_FAIL_COND_V_MSG(!a.is_valid_float(), 1, vformat("Amount is not in valid format."))
+    ERR_FAIL_COND_V_MSG(a[0] == '-', 1, vformat("Amount cannot be negative."))
     int decimal_place = a.find_char('.');
-    if(decimal_place == -1) amount.decode_dec(a + "000000000000000000000000000000");
+    if(decimal_place == -1) return amount.decode_dec(a + "000000000000000000000000000000");
     else {
-        int zeros_needed = 30 - (a.length() - decimal_place);
+        int zeros_needed = 31 - (a.length() - decimal_place);
         char zero_arr[zeros_needed + 1];
         for(int i = 0; i < zeros_needed; i++) zero_arr[i] = '0';
         zero_arr[zeros_needed] = '\0';
 
         a.remove(decimal_place);
-        amount.decode_dec(a + zero_arr);
+        while(a.begins_with("0"))
+            a.remove(0);
+        return amount.decode_dec(a + zero_arr);
     }
 }
 

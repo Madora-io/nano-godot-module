@@ -11,26 +11,6 @@ namespace
 {
 const char hex_characters[17] = "0123456789ABCDEF";
 
-// char const * account_lookup ("13456789abcdefghijkmnopqrstuwxyz");
-// char const * account_reverse ("~0~1234567~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~89:;<=>?@AB~CDEFGHIJK~LMNO~~~~~");
-// char account_encode (uint8_t value)
-// {
-// 	ERR_FAIL_COND_V_MSG(value >= 32, '0', "Invalid value for account encode: " + itos(value));
-// 	auto result (account_lookup[value]);
-// 	return result;
-// }
-// uint8_t account_decode (char value)
-// {
-// 	ERR_FAIL_COND_V(value < '0', '~');
-// 	ERR_FAIL_COND_V(value > '~', '~');
-// 	auto result (account_reverse[value - 0x30]);
-// 	if (result != '~')
-// 	{
-// 		result -= 0x30;
-// 	}
-// 	return result;
-// }
-
 String uint8_t_to_hex(uint8_t const & in) {
     char hex[3] = {hex_characters[in/16], hex_characters[in%16], '\0'};
     return String(hex);
@@ -45,95 +25,6 @@ String bytes_to_key_string(Iter first, Iter last) {
     return out;
 }
 }
-
-// void nano::uint256_union::encode_account (String & destination_a) const
-// {
-// 	ERR_FAIL_COND_MSG(!destination_a.empty(), "String not empty");
-
-// 	uint64_t check1 (0);
-// 	blake2b_state hash;
-// 	blake2b_init (&hash, 5);
-// 	blake2b_update (&hash, bytes.data (), bytes.size ());
-// 	blake2b_final (&hash, reinterpret_cast<uint8_t *> (&check1), 5);
-// 	nano::uint512_t number_l;
-// 	number_l.Parse (number ().ToString ());
-// 	number_l <<= 40;
-// 	number_l |= nano::uint512_t (check1);
-// 	for (auto i (0); i < 60; ++i)
-// 	{
-// 		uint8_t r ((number_l & static_cast<uint8_t> (0x1f)).ToInt ());
-// 		number_l >>= 5;
-// 		destination_a.push_back (account_encode (r));
-// 	}
-// 	destination_a.append ("_onan"); // nano_
-// 	std::reverse (destination_a.begin (), destination_a.end ());
-// }
-
-// String nano::uint256_union::to_account () const
-// {
-// 	String result;
-// 	encode_account (result);
-// 	return result;
-// }
-
-// bool nano::uint256_union::decode_account (String const & source_a)
-// {
-// 	auto error (source_a.size () < 5);
-// 	if (!error)
-// 	{
-// 		auto xrb_prefix (source_a[0] == 'x' && source_a[1] == 'r' && source_a[2] == 'b' && (source_a[3] == '_' || source_a[3] == '-'));
-// 		auto nano_prefix (source_a[0] == 'n' && source_a[1] == 'a' && source_a[2] == 'n' && source_a[3] == 'o' && (source_a[4] == '_' || source_a[4] == '-'));
-// 		error = (xrb_prefix && source_a.size () != 64) || (nano_prefix && source_a.size () != 65);
-// 		if (!error)
-// 		{
-// 			if (xrb_prefix || nano_prefix)
-// 			{
-// 				auto i (source_a.begin () + (xrb_prefix ? 4 : 5));
-// 				if (*i == '1' || *i == '3')
-// 				{
-// 					nano::uint512_t number_l;
-// 					for (auto j (source_a.end ()); !error && i != j; ++i)
-// 					{
-// 						uint8_t character (*i);
-// 						error = character < 0x30 || character >= 0x80;
-// 						if (!error)
-// 						{
-// 							uint8_t byte (account_decode (character));
-// 							error = byte == '~';
-// 							if (!error)
-// 							{
-// 								number_l <<= 5;
-// 								number_l += byte;
-// 							}
-// 						}
-// 					}
-// 					if (!error)
-// 					{
-// 						FString str = (number_l >> 40).ToString ();
-// 						str.RemoveFromStart ("0x");
-// 						*this = String (TCHAR_TO_UTF8 (*str));
-// 						uint64_t check1 ((number_l & static_cast<uint64_t> (0xffffffffff)).ToInt ());
-// 						uint64_t validation (0);
-// 						blake2b_state hash;
-// 						blake2b_init (&hash, 5);
-// 						blake2b_update (&hash, bytes.data (), bytes.size ());
-// 						blake2b_final (&hash, reinterpret_cast<uint8_t *> (&validation), 5);
-// 						error = check1 != validation;
-// 					}
-// 				}
-// 				else
-// 				{
-// 					error = true;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				error = true;
-// 			}
-// 		}
-// 	}
-// 	return error;
-// }
 
 nano::uint256_union::uint256_union (nano::uint256_t const & number_a)
 {

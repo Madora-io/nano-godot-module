@@ -201,57 +201,6 @@ Ref<ImageTexture> NanoAccount::get_qr_code_with_amount(Ref<NanoAmount> amount) {
     return get_qr_code_for_text(text);
 }
 
-// std::array<uint8_t, 32> NanoAccount::internal_block_hash(String previous, String representative, String balance, String link) {
-//     Ref<NanoAmount> a(memnew(NanoAmount));
-//     a->set_amount(balance);
-//     String b = a->to_hex();
-    
-//     String formatted_balance;
-//     if(b.length() == 32) formatted_balance = b;
-//     else if(b.length() < 32) {
-//         String zeroes;
-//         for(int i = 0; i < 32 - b.length(); i++) zeroes += '0';
-//         formatted_balance = zeroes + b;
-//     }
-//     else formatted_balance = b.substr(0, 32);
-//     std::array<uint8_t, 16> amount;
-//     key_string_to_bytes16(formatted_balance, amount);
-
-//     String formatted_previous;
-//     if(previous.length() == 64) formatted_previous = previous;
-//     else if(previous.length() < 64) {
-//         String zeroes;
-//         for(int i = 0; i < 64 - previous.length(); i++) zeroes += '0';
-//         formatted_previous = zeroes + previous;
-//     }
-//     else formatted_previous = previous.substr(0, 64);
-
-//     Ref<NanoAccount> rep_account(memnew(NanoAccount));
-//     rep_account->set_address(representative);
-
-//     print_line("Hash info: previous: " + formatted_previous + " representative: " + rep_account->get_public_key() + " balance: " + formatted_balance + " link: " + link);
-
-//     std::array<uint8_t, 32> pre_array;
-//     key_string_to_bytes(formatted_previous, pre_array);
-//     std::array<uint8_t, 32> rep_array;
-//     key_string_to_bytes(rep_account->get_public_key(), rep_array);
-//     std::array<uint8_t, 32> link_array;
-//     key_string_to_bytes(link, link_array);
-
-//     std::array<uint8_t, 32> result;
-//     blake2b_state hash_l;
-//     blake2b_init (&hash_l, sizeof (result));
-//     blake2b_update (&hash_l, preamble.data(), preamble.size());
-//     blake2b_update (&hash_l, public_key.data(), sizeof (public_key));
-// 	blake2b_update (&hash_l, pre_array.data(), sizeof (pre_array));
-// 	blake2b_update (&hash_l, rep_array.data(), sizeof (rep_array));
-// 	blake2b_update (&hash_l, amount.data(), sizeof (amount));
-// 	blake2b_update (&hash_l, link.c_str(), sizeof (link.c_str()));
-//     blake2b_final (&hash_l, result.data(), sizeof (result));
-
-//     return result;
-// }
-
 uint256_union NanoAccount::internal_block_hash(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link) {
     nano::uint256_union prev_u(previous);
     nano::uint256_union link_u(link);
@@ -269,16 +218,10 @@ uint256_union NanoAccount::internal_block_hash(String previous, Ref<NanoAccount>
     status = blake2b_final (&hash_l, result.bytes.data (), sizeof (result.bytes));
     ERR_FAIL_COND_V_MSG(status, uint256_union(), "Block hashing failed");
 	return result;
-
-    // std::array<uint8_t, 32> hash_result = internal_block_hash(previous, representative, balance, link);
-    // return bytes_to_key_string(hash_result.begin(), hash_result.end());
 }
 
 String NanoAccount::block_hash(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link) {
     return internal_block_hash(previous, representative, balance, link).to_string();
-
-    // std::array<uint8_t, 32> hash_result = internal_block_hash(previous, representative, balance, link);
-    // return bytes_to_key_string(hash_result.begin(), hash_result.end());
 }
 
 String NanoAccount::sign(String previous, Ref<NanoAccount> representative, Ref<NanoAmount> balance, String link) {
@@ -287,14 +230,6 @@ String NanoAccount::sign(String previous, Ref<NanoAccount> representative, Ref<N
     uint512_union result;
 	ed25519_sign (message.bytes.data (), sizeof (message.bytes), private_key.data (), public_key.data (), result.bytes.data ());
 	return result.to_string();
-
-    // std::array<uint8_t, 32> signature_data = internal_block_hash(previous, representative, balance, link);
-    // print_line("Block hash is " + bytes_to_key_string(signature_data.begin(), signature_data.end()));
-    // print_line("Private key is " + get_private_key());
-    // std::array<uint8_t, 64> signature_result;
-    // ed25519_sign(signature_data.data(), sizeof(signature_data), private_key.data(), public_key.data(), signature_result.data());
-    
-    // return bytes_to_key_string(signature_result.begin(), signature_result.end());
 }
 
 String NanoAccount::get_seed() {

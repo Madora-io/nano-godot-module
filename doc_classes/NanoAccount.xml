@@ -9,16 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="block_hash">
-			<return type="String" />
-			<argument index="0" name="previous" type="String" />
-			<argument index="1" name="representative" type="String" />
-			<argument index="2" name="balance" type="String" />
-			<argument index="3" name="link" type="String" />
-			<description>
-				Create the hash for a block on this account with the given parameters. This is identical to the RPC function [b]block_hash[/b] (https://docs.nano.org/commands/rpc-protocol/#block_hash) without needing to send a private key off of the local device.
-			</description>
-		</method>
 		<method name="get_index">
 			<return type="int" />
 			<description>
@@ -64,11 +54,21 @@
 				Initialize this account with a new seed and index. This allows more control than [method get_seed] which uses a default index of 0. This can be used to create multiple private keys for the same seed by incrementing the index.
 			</description>
 		</method>
+		<method name="block_hash">
+			<return type="String" />
+			<argument index="0" name="previous" type="String" />
+			<argument index="1" name="representative" type="NanoAccount" />
+			<argument index="2" name="balance" type="NanoAmount" />
+			<argument index="3" name="link" type="String" />
+			<description>
+				Create the hash for a block on this account with the given parameters. This is identical to the RPC function [b]block_hash[/b] (https://docs.nano.org/commands/rpc-protocol/#block_hash) without needing to send a private key off of the local device.
+			</description>
+		</method>
 		<method name="sign">
 			<return type="String" />
 			<argument index="0" name="previous" type="String" />
-			<argument index="1" name="representative" type="String" />
-			<argument index="2" name="balance" type="String" />
+			<argument index="1" name="representative" type="NanoAccount" />
+			<argument index="2" name="balance" type="NanoAmount" />
 			<argument index="3" name="link" type="String" />
 			<description>
 				Returns the signature for a block on this account with the given parameters. Used in conjunction with [method block_hash] to replicate the functionality of the [b]block_create[/b] Node RPC function.
@@ -77,14 +77,10 @@
 	</methods>
 	<members>
 		<member name="address" type="String" setter="set_address" getter="get_address">
-			<description>
-			The public address for this account (not to be confused with a public key.) Using set_address will set both the address, and the public key derived from the address.
-			</description>
+		The public address for this account (not to be confused with a public key). Using set_address will set both the address, and the public key derived from the address.
 		</member>
 		<member name="seed" type="String" setter="set_seed" getter="get_seed">
-			<description>
-			Represents the seed of an account, used to generate all private/public keys. set_seed uses an index of 0 for the seed, and will automatically generate the private key, public key, and address for that seed at index 0.
-			</description>
+		Represents the seed of an account, used to generate all private/public keys. The setter [method set_seed] uses an index of 0 for the seed, and will automatically generate the private key, public key, and address for that seed at index 0.
 		</member>
 	</members>
 	<constants>

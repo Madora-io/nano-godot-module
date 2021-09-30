@@ -12,6 +12,7 @@
 		<method name="is_ready">
 			<return type="bool" />
 			<description>
+			Returns true if the sender is ready to make another request, or false if it is currently processing one.
 			</description>
 		</method>
 		<method name="send">
@@ -28,9 +29,9 @@
 			<return type="void" />
 			<argument index="0" name="node_url" type="String" />
 			<argument index="1" name="auth_header" type="String" default="false" />
-			<argument index="2" name="use_ssl" type="bool" default="&quot;&quot;" />
-			<argument index="3" name="work_url" type="String" default="true" />
-			<argument index="4" name="use_peers" type="bool" default="&quot;&quot;" />
+			<argument index="2" name="use_ssl" type="bool" default="true" />
+			<argument index="3" name="work_url" type="String" default="&quot;&quot;" />
+			<argument index="4" name="use_peers" type="bool" default="false" />
 			<description>
 			This must be called before attempting to do any sending. default_representative is used for newly created accounts. auth_header can be generated with [method NanoRequest.basic_auth_header] for Basic Authentication (https://en.wikipedia.org/wiki/Basic_access_authentication), or any other token depending on the requirements of the node proxy. Work URL is required if work must be generated at a different destination than the RPC Node. If the same destination is used for both, use_peers will likely need to be true. For more information on Work Generation, see https://docs.nano.org/integration-guides/work-generation/.
 			</description>
@@ -38,7 +39,7 @@
 	</methods>
 	<signals>
 		<signal name="nano_send_completed">
-			<argument index="0" name="account" type="Object" />
+			<argument index="0" name="account" type="NanoAccount" />
 			<argument index="1" name="message" type="String" />
 			<argument index="2" name="response_code" type="int" />
 			<description>

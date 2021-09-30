@@ -59,7 +59,6 @@ Ref<NanoAccount> NanoWatcher::lookup_watched_account(String address) {
 }
 
 Error NanoWatcher::initialize_and_connect(String websocket_url, Ref<NanoAccount> default_representative, String node_url, String auth_header, bool use_ssl, String work_url, bool use_peers) {
-    print_line("Initializing Nano Watcher");
     this->websocket_url = websocket_url;
     this->node_url = node_url;
     this->default_rep = default_representative;
@@ -75,12 +74,10 @@ Error NanoWatcher::initialize_and_connect(String websocket_url, Ref<NanoAccount>
     if(!auth_header.empty())
         headers.push_back(auth_header);
     
-    print_line("Connecting Nano Watcher");
     return _client->connect_to_url(websocket_url, Vector<String>(), false, headers);
 }
 
 void NanoWatcher::write_data(String data) {
-    print_line("Sending data: ");
 
     CharString charstr = data.utf8();
     PoolByteArray packet;
@@ -93,12 +90,9 @@ void NanoWatcher::write_data(String data) {
     _client->get_peer(1)->set_write_mode(WebSocketPeer::WRITE_MODE_TEXT);
     Error err = _client->get_peer(1)->put_packet(packet.read().ptr(), packet.size());
     if(err) print_error("Failed to set up subscription with websocket, error: " + itos(err));
-    else print_line("Data submitted");
 }
 
 void NanoWatcher::_connected(String proto) {
-    print_line("Nano Watcher Connected");
-
     if(!watched_accounts.empty()){
         Dictionary request;
         request["topic"] = "confirmation";
@@ -148,7 +142,6 @@ void NanoWatcher::update_watched_accounts(Array accounts_add, Array accounts_del
 }
 
 void NanoWatcher::_closed(bool was_clean) {
-    print_line("Nano Watcher connection closed");
     emit_signal("disconnected", was_clean);
 }
 
@@ -159,7 +152,6 @@ void NanoWatcher::process_next_receive() {
 }
 
 void NanoWatcher::_on_data() {
-    print_line("Data recived from Websocket connection");
     const uint8_t * data;
     int buffer_size;
     _client->get_peer(1)->get_packet(&data, buffer_size);
@@ -173,7 +165,6 @@ void NanoWatcher::_on_data() {
     Error json_error = JSON::parse(packet, json_result, err_string, err_line);
     ERR_FAIL_COND_MSG(json_error, "JSON Parsing failed at line " + itos(err_line) + " with message: " + err_string);
     Dictionary json = json_result;
-    print_line("Info from websocket: " + packet);
     String ack = json.get("ack", "");
     if(!ack.empty()) return; // This is just a keepalive response
 

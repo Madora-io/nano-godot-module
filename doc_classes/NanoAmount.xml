@@ -64,8 +64,10 @@
 	</methods>
 	<members>
 		<member name="amount" type="String" setter="set_amount" getter="get_raw_amount">
+		Amount of Nano as raw.
 		</member>
 		<member name="nano_amount" type="String" setter="set_nano_amount" getter="get_nano_amount">
+		Amount in Nano (10^30 raw).
 		</member>
 	</members>
 	<constants>

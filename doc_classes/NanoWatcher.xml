@@ -9,28 +9,29 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_watched_account">
-			<return type="void" />
-			<argument index="0" name="account" type="NanoAccount" />
-			<description>
-			Adds a single account to the watchlist. If this account has a private key, and auto receive is true, notifications of a send on this account will trigger an automatic receive from this watcher.
-			</description>
-		</method>
 		<method name="initialize_and_connect">
 			<return type="void" />
-			<argument index="0" name="node_url" type="String" />
-			<argument index="1" name="default_representative" type="String" />
-			<argument index="2" name="auth_header" type="String" default="false" />
-			<argument index="3" name="use_ssl" type="bool" default="&quot;&quot;" />
-			<argument index="4" name="work_url" type="String" default="true" />
-			<argument index="5" name="use_peers" type="bool" default="&quot;&quot;" />
+			<argument index="0" name="websocket_url" type="String" />
+			<argument index="1" name="default_representative" type="NanoAccount" />
+			<argument index="2" name="node_url" type="String" default="&quot;&quot;" />
+			<argument index="3" name="auth_header" type="String" default="&quot;&quot;" />
+			<argument index="4" name="use_ssl" type="bool" default="true" />
+			<argument index="5" name="work_url" type="String" default="&quot;&quot;" />
+			<argument index="6" name="use_peers" type="bool" default="false" />
 			<description>
-			Must be called to set up the websocket connection.
+			Must be called to set up the websocket connection. Node Url must be set if auto receives are enabled. default_representative is used for the initial for auto-receives of an initial transaction.
 			</description>
 		</method>
 		<method name="is_websocket_connected">
 			<return type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="add_watched_account">
+			<return type="void" />
+			<argument index="0" name="account" type="NanoAccount" />
+			<description>
+			Adds a single account to the watchlist. If this account has a private key, and auto receive is true, notifications of a send on this account will trigger an automatic receive from this watcher.
 			</description>
 		</method>
 		<method name="update_watched_accounts">
@@ -43,19 +44,22 @@
 	</methods>
 	<members>
 		<member name="auto_receive" type="bool" setter="set_auto_receive" getter="get_auto_receive" default="true">
+			If false, receives will not be created automatically.
 		</member>
 	</members>
 	<signals>
 		<signal name="confirmation_received">
 			<argument index="0" name="json" type="Dictionary" />
 			<description>
+			This signal is emitted whenever a confirmation is received for a watched account, unless an auto-receive has been triggered.
 			</description>
 		</signal>
 		<signal name="nano_receive_completed">
-			<argument index="0" name="account" type="Object" />
+			<argument index="0" name="account" type="NanoAccount" />
 			<argument index="1" name="message" type="String" />
 			<argument index="2" name="response_code" type="int" />
 			<description>
+			This signal is emitted when an auto-receive transaction was triggered and processed. The account field is the account that is receiving the amount, message is either the receive block hash, or an error message. Response code will be 0 if the receive was submitted successfully, or a positive integer representing the error if the receive failed. Like all transactions, the confirmation on these receives will come through on the [sign confirmation_received] signal.
 			</description>
 		</signal>
 	</signals>

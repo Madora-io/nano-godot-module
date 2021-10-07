@@ -8,6 +8,8 @@ A Godot module to simplify use of Nano currency with the game engine. This modul
 
 For an example of how this module can be used, please check out a demo wallet written entirely in Godot here: https://github.com/Madora-io/nano-godot-demo.
 
+This plugin does require a connection to a Nano Node to be able to interact with the network. We recommend https://madora.io/ for node hosting, but the plugin should work with any node solution, self-hosted or otherwise.
+
 # Features
 
 ## NanoAccount

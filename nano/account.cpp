@@ -92,7 +92,7 @@ int NanoAccount::set_address(String const & a) {
         } else if(address.begins_with("xrb_")){
             ERR_FAIL_COND_V_MSG(address.length() != 64, 1, "Invalid xrb address");
             encoded_val = address.substr(4);
-        } else ERR_FAIL_V_MSG(1, "Address is invalid.")
+        } else ERR_FAIL_V_MSG(1, "Address is invalid.");
 
         ERR_FAIL_COND_V_MSG(encoded_val[0] != '1' && encoded_val[0] != '3', 1, "Invalid address");
 

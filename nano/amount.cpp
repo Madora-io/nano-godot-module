@@ -32,9 +32,9 @@ int NanoAmount::set_amount(String a) {
 }
 
 int NanoAmount::set_nano_amount(String a) {
-    ERR_FAIL_INDEX_V_MSG(a.length(), 40, 1, vformat("Nano amount is larger than maximum possible value."))
-    ERR_FAIL_COND_V_MSG(!a.is_valid_float(), 1, vformat("Amount is not in valid format."))
-    ERR_FAIL_COND_V_MSG(a[0] == '-', 1, vformat("Amount cannot be negative."))
+    ERR_FAIL_INDEX_V_MSG(a.length(), 40, 1, vformat("Nano amount is larger than maximum possible value."));
+    ERR_FAIL_COND_V_MSG(!a.is_valid_float(), 1, vformat("Amount is not in valid format."));
+    ERR_FAIL_COND_V_MSG(a[0] == '-', 1, vformat("Amount cannot be negative."));
     int decimal_place = a.find_char('.');
     if(decimal_place == -1) return amount.decode_dec(a + "000000000000000000000000000000");
     else {

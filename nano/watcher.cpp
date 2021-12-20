@@ -84,7 +84,7 @@ void NanoWatcher::write_data(String data) {
     size_t len = charstr.length();
     packet.resize(len);
     PoolByteArray::Write w = packet.write();
-    copymem(w.ptr(), charstr.ptr(), len);
+    memcpy(w.ptr(), charstr.ptr(), len);
     w.release();
 
     _client->get_peer(1)->set_write_mode(WebSocketPeer::WRITE_MODE_TEXT);

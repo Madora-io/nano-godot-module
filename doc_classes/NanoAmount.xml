@@ -4,7 +4,7 @@
 		Represents an amount of Nano.
 	</brief_description>
 	<description>
-		Used to deal with the large sizes for raw amounts of Nano. Get and set functions always deal with a string representing the raw amount. The functions [method get_nano_amount] and [method set_nano_amount] can be used to get and set with NANO amounts (10e30 raw). Internally this uses a Bigint class for representing the amounts.
+		Used to deal with the large sizes for raw amounts of Nano. Get and set functions always deal with a string representing the raw amount. The functions [method get_nano_amount] and [method set_nano_amount] can be used to get and set with NANO amounts (10e30 raw).
 	</description>
 	<tutorials>
 	</tutorials>

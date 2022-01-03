@@ -9,7 +9,7 @@ String NanoAmount::get_nano_amount() {
         str_amount = "0." + str_amount;
     else {
         int zeros_needed = 30 - length;
-        char zero_arr[zeros_needed + 1];
+        char zero_arr[31];
         for(int i = 0; i < zeros_needed; i++) zero_arr[i] = '0';
         zero_arr[zeros_needed] = '\0';
         String zeros(zero_arr);
@@ -39,7 +39,7 @@ int NanoAmount::set_nano_amount(String a) {
     if(decimal_place == -1) return amount.decode_dec(a + "000000000000000000000000000000");
     else {
         int zeros_needed = 31 - (a.length() - decimal_place);
-        char zero_arr[zeros_needed + 1];
+        char zero_arr[31];
         for(int i = 0; i < zeros_needed; i++) zero_arr[i] = '0';
         zero_arr[zeros_needed] = '\0';
 

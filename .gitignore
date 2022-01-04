@@ -5,6 +5,8 @@ export.cfg
 export_presets.cfg
 
 *.o
+*.obj
 .vscode/
+.vs/
 __pycache__/
 .DS_Store

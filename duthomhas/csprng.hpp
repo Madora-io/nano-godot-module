@@ -5,7 +5,8 @@
 // (See accompanying file ../../LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt )
 
-#pragma once
+#ifndef DUTHOMHAS_CSPRNG_HPP
+#define DUTHOMHAS_CSPRNG_HPP
 
 #include <initializer_list>
 #include <iterator>
@@ -189,3 +190,5 @@ namespace duthomhas
   };
 
 }
+
+#endif

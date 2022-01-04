@@ -10,10 +10,8 @@
 #include "csprng.h"
 
 /* ///////////////////////////////////////////////////////////////////////////////////////////// */
-#if PLATFORM_WINDOWS
+#ifdef _WIN32
 /* ///////////////////////////////////////////////////////////////////////////////////////////// */
-
-#include "Windows/AllowWindowsPlatformTypes.h"
 
   #include <windows.h>
   #include <wincrypt.h>
@@ -81,8 +79,6 @@
   #ifdef __cplusplus
   }
   #endif
-
-#include "Windows/HideWindowsPlatformTypes.h"
 
 /* ///////////////////////////////////////////////////////////////////////////////////////////// */
 #else  /* Using /dev/urandom                                                                     */

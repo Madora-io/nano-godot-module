@@ -114,16 +114,11 @@ int nano::uint256_union::decode_hex (String const & text)
     std::stringstream stream (c_text);
     stream << std::hex << std::noshowbase;
     nano::uint256_t number_l;
-    try
-    {
-        stream >> number_l;
-        *this = number_l;
-        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
-    }
-    catch (std::runtime_error &)
-    {
-        ERR_FAIL_V_MSG(1, "Invalid text for uint256: " + text);
-    }
+
+	stream >> number_l;
+	*this = number_l;
+	ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
+
     return 0;
 }
 
@@ -143,16 +138,11 @@ int nano::uint256_union::decode_dec (String const & text)
     std::stringstream stream (c_text);
     stream << std::dec << std::noshowbase;
     nano::uint256_t number_l;
-    try
-    {
-        stream >> number_l;
-        *this = number_l;
-        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
-    }
-    catch (std::runtime_error &)
-    {
-        ERR_FAIL_V_MSG(1, "Invalid text for uint256: " + text);
-    }
+
+	stream >> number_l;
+	*this = number_l;
+	ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint256 (likely too large): " + text);
+
     return 0;
 }
 
@@ -224,16 +214,11 @@ int nano::uint512_union::decode_hex (String const & text)
     std::stringstream stream (c_text);
     stream << std::hex << std::noshowbase;
     nano::uint512_t number_l;
-    try
-    {
-        stream >> number_l;
-        *this = number_l;
-        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint512 (likely too large): " + text);
-    }
-    catch (std::runtime_error &)
-    {
-        ERR_FAIL_V_MSG(1, "Invalid text for uint512: " + text);
-    }
+
+	stream >> number_l;
+	*this = number_l;
+	ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint512 (likely too large): " + text);
+
     return 0;
 }
 
@@ -374,16 +359,11 @@ int nano::uint128_union::decode_hex (String const & text)
     std::stringstream stream (c_text);
     stream << std::hex << std::noshowbase;
     nano::uint128_t number_l;
-    try
-    {
-        stream >> number_l;
-        *this = number_l;
-        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
-    }
-    catch (std::runtime_error &)
-    {
-        ERR_FAIL_V_MSG(1, "Invalid text for uint128: " + text);
-    }
+
+	stream >> number_l;
+	*this = number_l;
+	ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
+
     return 0;
 }
 
@@ -404,17 +384,12 @@ int nano::uint128_union::decode_dec (String const & text, bool decimal)
     std::stringstream stream (c_text);
     stream << std::dec << std::noshowbase;
     boost::multiprecision::checked_uint128_t number_l;
-    try
-    {
-        stream >> number_l;
-        nano::uint128_t unchecked (number_l);
-        *this = unchecked;
-        ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
-    }
-    catch (std::runtime_error &)
-    {
-        ERR_FAIL_V_MSG(1, "Invalid text for uint128: " + text);
-    }
+
+	stream >> number_l;
+	nano::uint128_t unchecked (number_l);
+	*this = unchecked;
+	ERR_FAIL_COND_V_MSG(!stream.eof(), 1, "Invalid text for uint128 (likely too large): " + text);
+
     return 0;
 }
 

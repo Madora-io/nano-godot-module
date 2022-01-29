@@ -15,6 +15,8 @@
 #include <string>
 #include <type_traits>
 
+#include "core/error_macros.h"
+
 #include "csprng.h"
 #include "is_iterable.hpp"
 
@@ -89,16 +91,14 @@ namespace duthomhas
     // Constructors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     csprng(): internal( csprng_create() ), sseq( internal, 0 )
     {
-      if (!internal)
-        throw exception( "duthomhas::CSPRNG: Failed to initialize the OS CSPRNG" );
+      ERR_FAIL_COND_MSG(!internal, "duthomhas::CSPRNG: Failed to initialize the OS CSPRNG");
     }
 
     csprng( const csprng& that ):
       internal( csprng_create() ),
       sseq( internal, that.sseq.seed_seq_size )
     {
-      if (!internal)
-        throw exception( "duthomhas::CSPRNG: Failed to initialize the OS CSPRNG" );
+      ERR_FAIL_COND_MSG(!internal, "duthomhas::CSPRNG: Failed to initialize the OS CSPRNG");
     }
 
     // Destructor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -112,8 +112,9 @@ namespace duthomhas
     template <typename T>
     T* operator () ( T* buffer, std::size_t n )
     {
-      if (!csprng_get( internal, (void*)buffer, n * sizeof(T) ))
-        throw exception( "duthomhas::CSPRNG: Failed to read the OS CSPRNG" );
+      if (!csprng_get( internal, (void*)buffer, n * sizeof(T) )) {
+        ERR_FAIL_V_MSG(NULL, "duthomhas::CSPRNG: Failed to read the OS CSPRNG" );
+      }
       return buffer;
     }
 

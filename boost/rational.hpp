@@ -929,40 +929,41 @@ namespace detail {
 
 }
 
-// Input and output
-template <typename IntType>
-std::istream& operator>> (std::istream& is, rational<IntType>& r)
-{
-    using std::ios;
+// --- COMMENTED OUT BECAUSE NANO GODOT DOESN'T NEED THIS AND IT BREAKS JAVASCRIPT
+// // Input and output
+// template <typename IntType>
+// std::istream& operator>> (std::istream& is, rational<IntType>& r)
+// {
+//     using std::ios;
 
-    IntType n = IntType(0), d = IntType(1);
-    char c = 0;
-    detail::resetter sentry(is);
+//     IntType n = IntType(0), d = IntType(1);
+//     char c = 0;
+//     detail::resetter sentry(is);
 
-    if ( is >> n )
-    {
-        if ( is.get(c) )
-        {
-            if ( c == '/' )
-            {
-                if ( is >> std::noskipws >> d )
-                    try {
-                        r.assign( n, d );
-                    } catch ( bad_rational & ) {        // normalization fail
-                        try { is.setstate(ios::failbit); }
-                        catch ( ... ) {}  // don't throw ios_base::failure...
-                        if ( is.exceptions() & ios::failbit )
-                            throw;   // ...but the original exception instead
-                        // ELSE: suppress the exception, use just error flags
-                    }
-            }
-            else
-                is.setstate( ios::failbit );
-        }
-    }
+//     if ( is >> n )
+//     {
+//         if ( is.get(c) )
+//         {
+//             if ( c == '/' )
+//             {
+//                 if ( is >> std::noskipws >> d )
+//                     try {
+//                         r.assign( n, d );
+//                     } catch ( bad_rational & ) {        // normalization fail
+//                         try { is.setstate(ios::failbit); }
+//                         catch ( ... ) {}  // don't throw ios_base::failure...
+//                         if ( is.exceptions() & ios::failbit )
+//                              throw; // ...but the original exception instead
+//                         // ELSE: suppress the exception, use just error flags
+//                     }
+//             }
+//             else
+//                 is.setstate( ios::failbit );
+//         }
+//     }
 
-    return is;
-}
+//     return is;
+// }
 
 // Add manipulators for output format?
 template <typename IntType>

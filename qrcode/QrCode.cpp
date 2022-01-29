@@ -29,6 +29,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+
+#include "core/error_macros.h"
+
 #include "QrCode.hpp"
 
 using std::int8_t;
@@ -65,8 +68,7 @@ const QrSegment::Mode QrSegment::Mode::ECI         (0x7,  0,  0,  0);
 
 
 QrSegment QrSegment::makeBytes(const vector<uint8_t> &data) {
-	if (data.size() > static_cast<unsigned int>(INT_MAX))
-		throw std::length_error("Data too long");
+	ERR_FAIL_COND_V_MSG((data.size() > static_cast<unsigned int>(INT_MAX)), QrSegment(Mode::BYTE, 0, vector<bool>()), "Data too long");
 	BitBuffer bb;
 	for (uint8_t b : data)
 		bb.appendBits(b, 8);
@@ -81,8 +83,7 @@ QrSegment QrSegment::makeNumeric(const char *digits) {
 	int charCount = 0;
 	for (; *digits != '\0'; digits++, charCount++) {
 		char c = *digits;
-		if (c < '0' || c > '9')
-			throw std::domain_error("String contains non-numeric characters");
+		ERR_FAIL_COND_V_MSG((c < '0' || c > '9'), QrSegment(Mode::BYTE, 0, vector<bool>()), "String contains non-numeric characters");
 		accumData = accumData * 10 + (c - '0');
 		accumCount++;
 		if (accumCount == 3) {
@@ -104,8 +105,8 @@ QrSegment QrSegment::makeAlphanumeric(const char *text) {
 	int charCount = 0;
 	for (; *text != '\0'; text++, charCount++) {
 		const char *temp = std::strchr(ALPHANUMERIC_CHARSET, *text);
-		if (temp == nullptr)
-			throw std::domain_error("String contains unencodable characters in alphanumeric mode");
+		ERR_FAIL_NULL_V_MSG(temp, QrSegment(Mode::BYTE, 0, vector<bool>()), "String contains unencodable characters in alphanumeric mode");
+
 		accumData = accumData * 45 + static_cast<int>(temp - ALPHANUMERIC_CHARSET);
 		accumCount++;
 		if (accumCount == 2) {
@@ -140,9 +141,9 @@ vector<QrSegment> QrSegment::makeSegments(const char *text) {
 
 QrSegment QrSegment::makeEci(long assignVal) {
 	BitBuffer bb;
-	if (assignVal < 0)
-		throw std::domain_error("ECI assignment value out of range");
-	else if (assignVal < (1 << 7))
+	ERR_FAIL_COND_V_MSG((assignVal < 0), QrSegment(Mode::BYTE, 0, vector<bool>()), "ECI assignment value out of range");
+
+	if (assignVal < (1 << 7))
 		bb.appendBits(static_cast<uint32_t>(assignVal), 8);
 	else if (assignVal < (1 << 14)) {
 		bb.appendBits(2, 2);
@@ -151,7 +152,7 @@ QrSegment QrSegment::makeEci(long assignVal) {
 		bb.appendBits(6, 3);
 		bb.appendBits(static_cast<uint32_t>(assignVal), 21);
 	} else
-		throw std::domain_error("ECI assignment value out of range");
+		ERR_FAIL_V_MSG(QrSegment(Mode::BYTE, 0, vector<bool>()), "ECI assignment value out of range");
 	return QrSegment(Mode::ECI, 0, std::move(bb));
 }
 
@@ -160,8 +161,7 @@ QrSegment::QrSegment(Mode md, int numCh, const std::vector<bool> &dt) :
 		mode(md),
 		numChars(numCh),
 		data(dt) {
-	if (numCh < 0)
-		throw std::domain_error("Invalid value");
+	ERR_FAIL_COND_MSG((numCh < 0), "Invalid value");
 }
 
 
@@ -169,8 +169,7 @@ QrSegment::QrSegment(Mode md, int numCh, std::vector<bool> &&dt) :
 		mode(md),
 		numChars(numCh),
 		data(std::move(dt)) {
-	if (numCh < 0)
-		throw std::domain_error("Invalid value");
+	ERR_FAIL_COND_MSG((numCh < 0), "Invalid value");
 }
 
 
@@ -235,7 +234,7 @@ int QrCode::getFormatBits(Ecc ecl) {
 		case Ecc::MEDIUM  :  return 0;
 		case Ecc::QUARTILE:  return 3;
 		case Ecc::HIGH    :  return 2;
-		default:  throw std::logic_error("Assertion error");
+		default:  ERR_FAIL_V_MSG(0, "Assertion error");
 	}
 }
 
@@ -254,8 +253,9 @@ QrCode QrCode::encodeBinary(const vector<uint8_t> &data, Ecc ecl) {
 
 QrCode QrCode::encodeSegments(const vector<QrSegment> &segs, Ecc ecl,
 		int minVersion, int maxVersion, int mask, bool boostEcl) {
-	if (!(MIN_VERSION <= minVersion && minVersion <= maxVersion && maxVersion <= MAX_VERSION) || mask < -1 || mask > 7)
-		throw std::invalid_argument("Invalid value");
+	if (!(MIN_VERSION <= minVersion && minVersion <= maxVersion && maxVersion <= MAX_VERSION) || mask < -1 || mask > 7) {
+		ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), "Invalid value");
+	}
 	
 	// Find the minimal version number to use
 	int version, dataUsedBits;
@@ -272,11 +272,12 @@ QrCode QrCode::encodeSegments(const vector<QrSegment> &segs, Ecc ecl,
 				sb << "Data length = " << dataUsedBits << " bits, ";
 				sb << "Max capacity = " << dataCapacityBits << " bits";
 			}
-			throw data_too_long(sb.str());
+			ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), sb.str().c_str());
 		}
 	}
-	if (dataUsedBits == -1)
-		throw std::logic_error("Assertion error");
+	if (dataUsedBits == -1) {
+		ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), "Assertion error");
+	}
 	
 	// Increase the error correction level while the data still fits in the current version number
 	for (Ecc newEcl : vector<Ecc>{Ecc::MEDIUM, Ecc::QUARTILE, Ecc::HIGH}) {  // From low to high
@@ -291,18 +292,22 @@ QrCode QrCode::encodeSegments(const vector<QrSegment> &segs, Ecc ecl,
 		bb.appendBits(static_cast<uint32_t>(seg.getNumChars()), seg.getMode().numCharCountBits(version));
 		bb.insert(bb.end(), seg.getData().begin(), seg.getData().end());
 	}
-	if (bb.size() != static_cast<unsigned int>(dataUsedBits))
-		throw std::logic_error("Assertion error");
+	if (bb.size() != static_cast<unsigned int>(dataUsedBits)) {
+		ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), "Assertion error");
+	}
 	
 	// Add terminator and pad up to a byte if applicable
 	size_t dataCapacityBits = static_cast<size_t>(getNumDataCodewords(version, ecl)) * 8;
-	if (bb.size() > dataCapacityBits)
-		throw std::logic_error("Assertion error");
+	if (bb.size() > dataCapacityBits) {
+		ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), "Assertion error");
+	}
+
 	bb.appendBits(0, std::min(4, static_cast<int>(dataCapacityBits - bb.size())));
 	bb.appendBits(0, (8 - static_cast<int>(bb.size() % 8)) % 8);
-	if (bb.size() % 8 != 0)
-		throw std::logic_error("Assertion error");
-	
+	if (bb.size() % 8 != 0) {
+		ERR_FAIL_V_MSG(QrCode(MIN_VERSION, ecl, vector<uint8_t>(), mask), "Assertion error");
+	}
+
 	// Pad with alternating bytes until data capacity is reached
 	for (uint8_t padByte = 0xEC; bb.size() < dataCapacityBits; padByte ^= 0xEC ^ 0x11)
 		bb.appendBits(padByte, 8);
@@ -321,10 +326,8 @@ QrCode::QrCode(int ver, Ecc ecl, const vector<uint8_t> &dataCodewords, int msk) 
 		// Initialize fields and check arguments
 		version(ver),
 		errorCorrectionLevel(ecl) {
-	if (ver < MIN_VERSION || ver > MAX_VERSION)
-		throw std::domain_error("Version value out of range");
-	if (msk < -1 || msk > 7)
-		throw std::domain_error("Mask value out of range");
+	if (ver < MIN_VERSION || ver > MAX_VERSION) { ERR_FAIL_MSG("Version value out of range"); }
+	if (msk < -1 || msk > 7) { ERR_FAIL_MSG("Mask value out of range"); }
 	size = ver * 4 + 17;
 	size_t sz = static_cast<size_t>(size);
 	modules    = vector<vector<bool> >(sz, vector<bool>(sz));  // Initially all white
@@ -349,8 +352,7 @@ QrCode::QrCode(int ver, Ecc ecl, const vector<uint8_t> &dataCodewords, int msk) 
 			applyMask(i);  // Undoes the mask due to XOR
 		}
 	}
-	if (msk < 0 || msk > 7)
-		throw std::logic_error("Assertion error");
+	if (msk < 0 || msk > 7) { ERR_FAIL_MSG("Assertion error"); }
 	this->mask = msk;
 	applyMask(msk);  // Apply the final choice of mask
 	drawFormatBits(msk);  // Overwrite old format bits
@@ -386,10 +388,8 @@ bool QrCode::getModule(int x, int y) const {
 
 
 std::string QrCode::toSvgString(int border) const {
-	if (border < 0)
-		throw std::domain_error("Border must be non-negative");
-	if (border > INT_MAX / 2 || border * 2 > INT_MAX - size)
-		throw std::overflow_error("Border too large");
+	if (border < 0) { ERR_FAIL_V_MSG("", "Border must be non-negative"); }
+	if (border > INT_MAX / 2 || border * 2 > INT_MAX - size) { ERR_FAIL_V_MSG("", "Border too large"); }
 	
 	std::ostringstream sb;
 	sb << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -449,8 +449,7 @@ void QrCode::drawFormatBits(int msk) {
 	for (int i = 0; i < 10; i++)
 		rem = (rem << 1) ^ ((rem >> 9) * 0x537);
 	int bits = (data << 10 | rem) ^ 0x5412;  // uint15
-	if (bits >> 15 != 0)
-		throw std::logic_error("Assertion error");
+	if (bits >> 15 != 0) { ERR_FAIL_MSG("Assertion error"); }
 	
 	// Draw first copy
 	for (int i = 0; i <= 5; i++)
@@ -479,8 +478,7 @@ void QrCode::drawVersion() {
 	for (int i = 0; i < 12; i++)
 		rem = (rem << 1) ^ ((rem >> 11) * 0x1F25);
 	long bits = static_cast<long>(version) << 12 | rem;  // uint18
-	if (bits >> 18 != 0)
-		throw std::logic_error("Assertion error");
+	if (bits >> 18 != 0) { ERR_FAIL_MSG("Assertion error"); }
 	
 	// Draw two copies
 	for (int i = 0; i < 18; i++) {
@@ -527,8 +525,9 @@ bool QrCode::module(int x, int y) const {
 
 
 vector<uint8_t> QrCode::addEccAndInterleave(const vector<uint8_t> &data) const {
-	if (data.size() != static_cast<unsigned int>(getNumDataCodewords(version, errorCorrectionLevel)))
-		throw std::invalid_argument("Invalid argument");
+	if (data.size() != static_cast<unsigned int>(getNumDataCodewords(version, errorCorrectionLevel))) {
+		ERR_FAIL_V_MSG(vector<uint8_t>(), "Invalid argument");
+	}
 	
 	// Calculate parameter numbers
 	int numBlocks = NUM_ERROR_CORRECTION_BLOCKS[static_cast<int>(errorCorrectionLevel)][version];
@@ -559,15 +558,17 @@ vector<uint8_t> QrCode::addEccAndInterleave(const vector<uint8_t> &data) const {
 				result.push_back(blocks.at(j).at(i));
 		}
 	}
-	if (result.size() != static_cast<unsigned int>(rawCodewords))
-		throw std::logic_error("Assertion error");
+	if (result.size() != static_cast<unsigned int>(rawCodewords)) {
+		ERR_FAIL_V_MSG(vector<uint8_t>(), "Assertion error");
+	}
 	return result;
 }
 
 
 void QrCode::drawCodewords(const vector<uint8_t> &data) {
-	if (data.size() != static_cast<unsigned int>(getNumRawDataModules(version) / 8))
-		throw std::invalid_argument("Invalid argument");
+	if (data.size() != static_cast<unsigned int>(getNumRawDataModules(version) / 8)) {
+		ERR_FAIL_MSG("Invalid argument");
+	}
 	
 	size_t i = 0;  // Bit index into the data
 	// Do the funny zigzag scan
@@ -588,14 +589,12 @@ void QrCode::drawCodewords(const vector<uint8_t> &data) {
 			}
 		}
 	}
-	if (i != data.size() * 8)
-		throw std::logic_error("Assertion error");
+	if (i != data.size() * 8) { ERR_FAIL_MSG("Assertion error"); }
 }
 
 
 void QrCode::applyMask(int msk) {
-	if (msk < 0 || msk > 7)
-		throw std::domain_error("Mask value out of range");
+	if (msk < 0 || msk > 7) { ERR_FAIL_MSG("Mask value out of range"); }
 	size_t sz = static_cast<size_t>(size);
 	for (size_t y = 0; y < sz; y++) {
 		for (size_t x = 0; x < sz; x++) {
@@ -609,7 +608,7 @@ void QrCode::applyMask(int msk) {
 				case 5:  invert = x * y % 2 + x * y % 3 == 0;          break;
 				case 6:  invert = (x * y % 2 + x * y % 3) % 2 == 0;    break;
 				case 7:  invert = ((x + y) % 2 + x * y % 3) % 2 == 0;  break;
-				default:  throw std::logic_error("Assertion error");
+				default:  ERR_FAIL_MSG("Assertion error");
 			}
 			modules.at(y).at(x) = modules.at(y).at(x) ^ (invert & !isFunction.at(y).at(x));
 		}
@@ -709,8 +708,7 @@ vector<int> QrCode::getAlignmentPatternPositions() const {
 
 
 int QrCode::getNumRawDataModules(int ver) {
-	if (ver < MIN_VERSION || ver > MAX_VERSION)
-		throw std::domain_error("Version number out of range");
+	if (ver < MIN_VERSION || ver > MAX_VERSION) { ERR_FAIL_V_MSG(0, "Version number out of range"); }
 	int result = (16 * ver + 128) * ver + 64;
 	if (ver >= 2) {
 		int numAlign = ver / 7 + 2;
@@ -718,8 +716,7 @@ int QrCode::getNumRawDataModules(int ver) {
 		if (ver >= 7)
 			result -= 36;
 	}
-	if (!(208 <= result && result <= 29648))
-		throw std::logic_error("Assertion error");
+	if (!(208 <= result && result <= 29648)) { ERR_FAIL_V_MSG(0, "Assertion error"); }
 	return result;
 }
 
@@ -732,8 +729,7 @@ int QrCode::getNumDataCodewords(int ver, Ecc ecl) {
 
 
 vector<uint8_t> QrCode::reedSolomonComputeDivisor(int degree) {
-	if (degree < 1 || degree > 255)
-		throw std::domain_error("Degree out of range");
+	if (degree < 1 || degree > 255) { ERR_FAIL_V_MSG(vector<uint8_t>(), "Degree out of range"); }
 	// Polynomial coefficients are stored from highest to lowest power, excluding the leading term which is always 1.
 	// For example the polynomial x^3 + 255x^2 + 8x + 93 is stored as the uint8 array {255, 8, 93}.
 	vector<uint8_t> result(static_cast<size_t>(degree));
@@ -776,16 +772,14 @@ uint8_t QrCode::reedSolomonMultiply(uint8_t x, uint8_t y) {
 		z = (z << 1) ^ ((z >> 7) * 0x11D);
 		z ^= ((y >> i) & 1) * x;
 	}
-	if (z >> 8 != 0)
-		throw std::logic_error("Assertion error");
+	if (z >> 8 != 0) { ERR_FAIL_V_MSG(0, "Assertion error"); }
 	return static_cast<uint8_t>(z);
 }
 
 
 int QrCode::finderPenaltyCountPatterns(const std::array<int,7> &runHistory) const {
 	int n = runHistory.at(1);
-	if (n > size * 3)
-		throw std::logic_error("Assertion error");
+	if (n > size * 3){ ERR_FAIL_V_MSG(0, "Assertion error"); }
 	bool core = n > 0 && runHistory.at(2) == n && runHistory.at(3) == n * 3 && runHistory.at(4) == n && runHistory.at(5) == n;
 	return (core && runHistory.at(0) >= n * 4 && runHistory.at(6) >= n ? 1 : 0)
 	     + (core && runHistory.at(6) >= n * 4 && runHistory.at(0) >= n ? 1 : 0);
@@ -853,8 +847,9 @@ BitBuffer::BitBuffer()
 
 
 void BitBuffer::appendBits(std::uint32_t val, int len) {
-	if (len < 0 || len > 31 || val >> len != 0)
-		throw std::domain_error("Value out of range");
+	if (len < 0 || len > 31 || val >> len != 0){
+		ERR_FAIL_MSG("Value out of range");
+	}
 	for (int i = len - 1; i >= 0; i--)  // Append bit by bit
 		this->push_back(((val >> i) & 1) != 0);
 }
